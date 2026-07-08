@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { IconMail, IconLock, IconGoogle, IconFacebook, IconUser, IconMotorcycle } from '@/components/Icons';
 import { LogoMark } from '@/components/Logo';
@@ -10,8 +10,31 @@ const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const { login, loginWithGoogle, loginWithFacebook } = useAuth();
+  const { login, loginWithGoogle, loginWithFacebook, user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const fromPath =
+    (location.state as { from?: { pathname?: string } } | null)?.from?.pathname;
+
+  const getPreferredRole = (): 'passenger' | 'rider' => {
+    if (fromPath === '/rider' || fromPath === '/pricing') {
+      return 'rider';
+    }
+
+    if (fromPath === '/passenger') {
+      return 'passenger';
+    }
+
+    if (email.toLowerCase().includes('rider')) {
+      return 'rider';
+    }
+
+    return user?.role === 'rider' ? 'rider' : 'passenger';
+  };
+
+  const getSuccessPath = (role: 'passenger' | 'rider') =>
+    fromPath || (role === 'rider' ? '/rider' : '/passenger');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,7 +44,7 @@ const LoginPage: React.FC = () => {
     try {
       const result = await login(email, password);
       if (result.success) {
-        navigate('/');
+        navigate(getSuccessPath(getPreferredRole()), { replace: true });
       } else {
         setError(result.error || 'Login failed');
       }
@@ -33,13 +56,14 @@ const LoginPage: React.FC = () => {
   };
 
   const handleSocialLogin = async (
-    action: () => Promise<{ success: boolean; error?: string }>
+    action: (role: 'passenger' | 'rider') => Promise<{ success: boolean; error?: string }>
   ) => {
     setError('');
     try {
-      const result = await action();
+      const preferredRole = getPreferredRole();
+      const result = await action(preferredRole);
       if (result.success) {
-        navigate('/');
+        navigate(getSuccessPath(preferredRole), { replace: true });
       } else {
         setError(result.error || 'Social login failed');
       }
@@ -110,12 +134,12 @@ const LoginPage: React.FC = () => {
             <SocialLoginButton
               label="Continue with Google"
               icon={<IconGoogle size={18} />}
-              onClick={() => handleSocialLogin(() => loginWithGoogle())}
+              onClick={() => handleSocialLogin(loginWithGoogle)}
             />
             <SocialLoginButton
               label="Continue with Facebook"
               icon={<IconFacebook size={18} />}
-              onClick={() => handleSocialLogin(() => loginWithFacebook())}
+              onClick={() => handleSocialLogin(loginWithFacebook)}
             />
           </form>
           <div className="mt-5 text-center">

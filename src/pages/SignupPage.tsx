@@ -6,15 +6,19 @@ import { LogoMark } from '@/components/Logo';
 import SocialLoginButton from '@/components/SocialLoginButton';
 
 type UserRole = 'passenger' | 'rider';
+const RWANDA_PHONE_REGEX = /^\+250\s?\d{3}\s?\d{3}\s?\d{3}$/;
+const isUserRole = (value: string | null): value is UserRole =>
+  value === 'passenger' || value === 'rider';
 
 const SignupPage: React.FC = () => {
   const [searchParams] = useSearchParams();
-  const defaultRole = (searchParams.get('role') as UserRole) || 'passenger';
-  const [step, setStep] = useState<'role' | 'form'>('role');
+  const requestedRole = searchParams.get('role');
+  const defaultRole: UserRole = isUserRole(requestedRole) ? requestedRole : 'passenger';
+  const [step, setStep] = useState<'role' | 'form'>(isUserRole(requestedRole) ? 'form' : 'role');
   const [role, setRole] = useState<UserRole>(defaultRole);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('+250 ');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -24,12 +28,25 @@ const SignupPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (submitting) return;
+    const normalizedName = name.trim().replace(/\s+/g, ' ');
+    const normalizedPhone = phone.replace(/\s+/g, ' ').trim();
+
+    if (!normalizedName) {
+      setError('Enter your full name');
+      return;
+    }
+
+    if (!RWANDA_PHONE_REGEX.test(normalizedPhone)) {
+      setError('Enter a valid Rwanda phone number like +250 788 000 001');
+      return;
+    }
+
     setSubmitting(true);
     setError('');
     try {
-      const result = await signup(name, email, password, role, phone);
+      const result = await signup(normalizedName, email, password, role, normalizedPhone);
       if (result.success) {
-        navigate(role === 'passenger' ? '/passenger' : '/rider');
+        navigate(role === 'passenger' ? '/passenger' : '/rider', { replace: true });
       } else {
         setError(result.error || 'Signup failed');
       }
@@ -41,13 +58,13 @@ const SignupPage: React.FC = () => {
   };
 
   const handleSocialLogin = async (
-    action: () => Promise<{ success: boolean; error?: string }>
+    action: (role: UserRole) => Promise<{ success: boolean; error?: string }>
   ) => {
     setError('');
     try {
-      const result = await action();
+      const result = await action(role);
       if (result.success) {
-        navigate('/');
+        navigate(role === 'passenger' ? '/passenger' : '/rider', { replace: true });
       } else {
         setError(result.error || 'Social login failed');
       }
@@ -175,6 +192,7 @@ const SignupPage: React.FC = () => {
                   className="w-full bg-surface-secondary border border-[#eceef3] rounded-xl pl-10 pr-4 py-3 text-[13px] text-gray-800 font-medium focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none transition-all"
                   placeholder="+250 788 000 001"
                   required
+                  pattern="^\+250\s?\d{3}\s?\d{3}\s?\d{3}$"
                 />
               </div>
             </div>
@@ -209,12 +227,12 @@ const SignupPage: React.FC = () => {
             <SocialLoginButton
               label="Continue with Google"
               icon={<IconGoogle size={18} />}
-              onClick={() => handleSocialLogin(() => loginWithGoogle())}
+              onClick={() => handleSocialLogin(loginWithGoogle)}
             />
             <SocialLoginButton
               label="Continue with Facebook"
               icon={<IconFacebook size={18} />}
-              onClick={() => handleSocialLogin(() => loginWithFacebook())}
+              onClick={() => handleSocialLogin(loginWithFacebook)}
             />
           </form>
           <div className="mt-5 text-center space-y-2">

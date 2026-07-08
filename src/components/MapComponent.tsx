@@ -47,7 +47,9 @@ const MapComponent: React.FC<MapComponentProps> = ({
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
-  const { isLoaded } = useGoogleMaps({ apiKey: 'demo' });
+  const myLocationMarkerRef = useRef<any>(null);
+  const accuracyCircleRef = useRef<any>(null);
+  const { isLoaded, error } = useGoogleMaps({ apiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY ?? '' });
   const { position, getCurrentPosition } = useGeolocation({ watch: false });
   const [selectedPassenger, setSelectedPassenger] = useState<PassengerMarker | null>(null);
   const [useFallback, setUseFallback] = useState(false);
@@ -61,6 +63,12 @@ const MapComponent: React.FC<MapComponentProps> = ({
   }, [showMyLocation, getCurrentPosition]);
 
   useEffect(() => {
+    if (error) {
+      setUseFallback(true);
+    }
+  }, [error]);
+
+  useEffect(() => {
     if (!isLoaded || !mapRef.current || mapInstanceRef.current) return;
 
     try {
@@ -70,12 +78,10 @@ const MapComponent: React.FC<MapComponentProps> = ({
         return;
       }
 
-      const center = position
-        ? { lat: position.lat, lng: position.lng }
-        : defaultCenter;
-
       const map = new google.maps.Map(mapRef.current, {
-        center,
+        center: position
+          ? { lat: position.lat, lng: position.lng }
+          : defaultCenter,
         zoom: defaultZoom,
         disableDefaultUI: !interactive,
         zoomControl: interactive,
@@ -88,64 +94,101 @@ const MapComponent: React.FC<MapComponentProps> = ({
       });
 
       mapInstanceRef.current = map;
-
-      if (position) {
-        new google.maps.Marker({
-          position: { lat: position.lat, lng: position.lng },
-          map,
-          icon: {
-            path: google.maps.SymbolPath.CIRCLE,
-            scale: 10,
-            fillColor: '#2a4dd6',
-            fillOpacity: 1,
-            strokeColor: '#ffffff',
-            strokeWeight: 3,
-          },
-          title: 'My Location',
-        });
-
-        new google.maps.Circle({
-          center: { lat: position.lat, lng: position.lng },
-          radius: position.accuracy,
-          map,
-          fillColor: '#2a4dd6',
-          fillOpacity: 0.1,
-          strokeColor: '#2a4dd6',
-          strokeOpacity: 0.3,
-          strokeWeight: 1,
-        });
-      }
-
-      allMarkers.forEach((marker) => {
-        const gMarker = new google.maps.Marker({
-          position: { lat: marker.lat, lng: marker.lng },
-          map,
-          title: marker.name,
-          animation: google.maps.Animation.DROP,
-        });
-
-        gMarker.addListener('click', () => {
-          setSelectedPassenger(marker);
-          if (onMarkerClick) onMarkerClick(marker);
-        });
-
-        markersRef.current.push(gMarker);
-      });
     } catch {
       setUseFallback(true);
     }
+  }, [isLoaded, error, position, defaultCenter, defaultZoom, interactive]);
 
-    return () => {
-      markersRef.current.forEach(m => m.setMap(null));
-      markersRef.current = [];
-    };
-  }, [isLoaded, position, defaultCenter, defaultZoom, interactive, allMarkers, onMarkerClick]);
+  useEffect(() => {
+    if (!mapInstanceRef.current || !window.google?.maps) return;
+
+    markersRef.current.forEach(marker => marker.setMap(null));
+    markersRef.current = [];
+
+    allMarkers.forEach((marker) => {
+      const gMarker = new window.google.maps.Marker({
+        position: { lat: marker.lat, lng: marker.lng },
+        map: mapInstanceRef.current,
+        title: marker.name,
+        animation: window.google.maps.Animation.DROP,
+      });
+
+      gMarker.addListener('click', () => {
+        setSelectedPassenger(marker);
+        if (onMarkerClick) onMarkerClick(marker);
+      });
+
+      markersRef.current.push(gMarker);
+    });
+  }, [allMarkers, onMarkerClick, isLoaded]);
 
   useEffect(() => {
     if (!mapInstanceRef.current || !position || !window.google?.maps) return;
+
+    const google = window.google;
     const map = mapInstanceRef.current;
-    map.setCenter({ lat: position.lat, lng: position.lng });
-  }, [position]);
+    const currentPosition = { lat: position.lat, lng: position.lng };
+
+    map.setCenter(currentPosition);
+
+    if (!showMyLocation) {
+      if (myLocationMarkerRef.current) {
+        myLocationMarkerRef.current.setMap(null);
+        myLocationMarkerRef.current = null;
+      }
+      if (accuracyCircleRef.current) {
+        accuracyCircleRef.current.setMap(null);
+        accuracyCircleRef.current = null;
+      }
+      return;
+    }
+
+    if (!myLocationMarkerRef.current) {
+      myLocationMarkerRef.current = new google.maps.Marker({
+        position: currentPosition,
+        map,
+        icon: {
+          path: google.maps.SymbolPath.CIRCLE,
+          scale: 10,
+          fillColor: '#2a4dd6',
+          fillOpacity: 1,
+          strokeColor: '#ffffff',
+          strokeWeight: 3,
+        },
+        title: 'My Location',
+      });
+    } else {
+      myLocationMarkerRef.current.setPosition(currentPosition);
+    }
+
+    if (!accuracyCircleRef.current) {
+      accuracyCircleRef.current = new google.maps.Circle({
+        center: currentPosition,
+        radius: position.accuracy,
+        map,
+        fillColor: '#2a4dd6',
+        fillOpacity: 0.1,
+        strokeColor: '#2a4dd6',
+        strokeOpacity: 0.3,
+        strokeWeight: 1,
+      });
+    } else {
+      accuracyCircleRef.current.setCenter(currentPosition);
+      accuracyCircleRef.current.setRadius(position.accuracy);
+    }
+  }, [position, showMyLocation]);
+
+  useEffect(() => {
+    return () => {
+      markersRef.current.forEach(marker => marker.setMap(null));
+      myLocationMarkerRef.current?.setMap(null);
+      accuracyCircleRef.current?.setMap(null);
+      markersRef.current = [];
+      myLocationMarkerRef.current = null;
+      accuracyCircleRef.current = null;
+      mapInstanceRef.current = null;
+    };
+  }, []);
 
   const handleClosePopup = useCallback(() => {
     setSelectedPassenger(null);
@@ -164,7 +207,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
             </div>
             <h3 className="font-bold text-gray-900 mb-2">Interactive Map</h3>
             <p className="text-sm text-gray-500 mb-4">
-              Google Maps integration is ready. Add your API key to enable the interactive map with real-time passenger locations.
+              Google Maps integration is ready. Add a `VITE_GOOGLE_MAPS_API_KEY` value to enable the interactive map with real-time passenger locations.
             </p>
             <div className="space-y-2">
               <p className="text-xs font-semibold text-primary-700 uppercase tracking-wider mb-2">Nearby Passengers</p>

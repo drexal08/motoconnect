@@ -37,6 +37,12 @@ const DEMO_PASSENGERS: PassengerMarker[] = [
   { id: '8', lat: -1.97, lng: 30.05, name: 'Marie L.', phone: '+250 787 890 123', destination: 'Niboye', timestamp: Date.now() - 540000 },
 ];
 
+const FREE_SUBSCRIPTION = {
+  tier: 'free' as const,
+  expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+  viewsRemaining: 3,
+};
+
 const RiderHome: React.FC = () => {
   const { user, updateUser, logout } = useAuth();
   const navigate = useNavigate();
@@ -44,6 +50,7 @@ const RiderHome: React.FC = () => {
   const [viewedPassengers, setViewedPassengers] = useState<ViewedPassenger[]>([]);
   const [viewsRemaining, setViewsRemaining] = useState(3);
   const [showPassengerList, setShowPassengerList] = useState(false);
+  const isUnlimited = user?.subscription?.tier === 'max';
 
   useEffect(() => {
     const stored = localStorage.getItem('mc_viewed_passengers');
@@ -52,19 +59,27 @@ const RiderHome: React.FC = () => {
         setViewedPassengers(JSON.parse(stored));
       } catch { /* ignore */ }
     }
+
     if (user?.subscription) {
-      setViewsRemaining(user.subscription.viewsRemaining);
+      const isExpired = new Date(user.subscription.expiresAt).getTime() <= Date.now();
+
+      if (isExpired) {
+        setViewsRemaining(FREE_SUBSCRIPTION.viewsRemaining);
+        updateUser({ subscription: FREE_SUBSCRIPTION });
+        return;
+      }
+
+      setViewsRemaining(user.subscription.tier === 'max' ? -1 : user.subscription.viewsRemaining);
     }
-  }, [user]);
+  }, [user, updateUser]);
 
   const handleViewPassenger = (passenger: PassengerMarker) => {
-    if (viewsRemaining <= 0) {
+    if (!isUnlimited && viewsRemaining <= 0) {
       navigate('/pricing');
       return;
     }
+
     setSelectedPassenger(passenger);
-    const newViewsRemaining = viewsRemaining - 1;
-    setViewsRemaining(newViewsRemaining);
     const viewed: ViewedPassenger = {
       id: passenger.id,
       name: passenger.name,
@@ -75,11 +90,23 @@ const RiderHome: React.FC = () => {
     const updated = [viewed, ...viewedPassengers];
     setViewedPassengers(updated);
     localStorage.setItem('mc_viewed_passengers', JSON.stringify(updated));
-    if (user?.subscription) {
+    if (!isUnlimited) {
+      const newViewsRemaining = viewsRemaining - 1;
+      setViewsRemaining(newViewsRemaining);
+      if (user?.subscription) {
+        updateUser({
+          subscription: {
+            ...user.subscription,
+            viewsRemaining: newViewsRemaining,
+          },
+        });
+      }
+    }
+    if (isUnlimited && user?.subscription) {
       updateUser({
         subscription: {
           ...user.subscription,
-          viewsRemaining: newViewsRemaining,
+          viewsRemaining: -1,
         },
       });
     }
@@ -91,8 +118,6 @@ const RiderHome: React.FC = () => {
     if (diff < 60) return `${diff} min ago`;
     return `${Math.floor(diff / 60)}h ago`;
   };
-
-  const isUnlimited = user?.subscription?.tier === 'max';
 
   return (
     <div className="min-h-[calc(100vh-60px)] bg-surface-secondary">
@@ -106,7 +131,7 @@ const RiderHome: React.FC = () => {
             <Link
               to="/pricing"
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${
-                viewsRemaining <= 0
+                !isUnlimited && viewsRemaining <= 0
                   ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100'
                   : isUnlimited
                     ? 'bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100'
@@ -126,7 +151,7 @@ const RiderHome: React.FC = () => {
           </div>
         </div>
 
-        {viewsRemaining <= 0 && (
+        {!isUnlimited && viewsRemaining <= 0 && (
           <div className="bg-red-50 border border-red-200 rounded-2xl p-4 mb-4 flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center shrink-0">
               <IconX size={18} className="text-red-500" />

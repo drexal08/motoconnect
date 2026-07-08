@@ -41,6 +41,7 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
   const handleError = useCallback((err: GeolocationPositionError) => {
     setError(err.message);
     setIsLoading(false);
+    setIsWatching(false);
   }, []);
 
   const getCurrentPosition = useCallback(() => {
