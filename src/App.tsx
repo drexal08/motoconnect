@@ -1,4 +1,5 @@
 import { Routes, Route } from 'react-router'
+import { Analytics } from '@vercel/analytics/react'
 import Navbar from './components/Navbar'
 import ProtectedRoute from './components/ProtectedRoute'
 import HomePage from './pages/HomePage'
@@ -13,6 +14,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-surface-secondary">
       <Navbar />
+      <Analytics />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
