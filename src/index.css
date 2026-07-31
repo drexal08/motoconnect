@@ -3,82 +3,65 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --background: 160 20% 97%;
-    --foreground: 220 20% 15%;
-    --card: 0 0% 100%;
-    --card-foreground: 220 20% 15%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 20% 15%;
-    --primary: 162 70% 22%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 42 95% 54%;
-    --secondary-foreground: 220 20% 10%;
-    --muted: 160 10% 94%;
-    --muted-foreground: 220 10% 40%;
-    --accent: 42 95% 54%;
-    --accent-foreground: 220 20% 10%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 160 10% 88%;
-    --input: 160 10% 88%;
-    --ring: 162 70% 22%;
-    --radius: 0.75rem;
-    --sidebar-background: 160 10% 97%;
-    --sidebar-foreground: 220 20% 15%;
-    --sidebar-primary: 162 70% 22%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 42 95% 54%;
-    --sidebar-accent-foreground: 220 20% 10%;
-    --sidebar-border: 160 10% 88%;
-    --sidebar-ring: 162 70% 22%;
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
-}
-
-@layer base {
-  * { @apply border-border; }
-  html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
   body {
-    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    color: #181a18;
-    background: #f6f7f4;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: #1f2421;
+    background: #fafaf8;
+  }
+  /* §7.1: every interactive control ≥16px — prevents iOS/Android zoom-on-focus */
+  input, select, textarea, button {
+    font-size: 16px;
   }
 }
 
-/* Minimalist digital Imigongo geometric pattern using light CSS gradients */
+/* Abstracted Imigongo-inspired motif (PRD §7.3): geometric relief lines and
+   spiral hints as pure CSS — homage, not reproduction. Backgrounds/borders only. */
 @layer components {
   .imigongo-bg {
-    background-color: #f6f7f4;
+    background-color: #fafaf8;
     background-image:
-      linear-gradient(30deg, #e8ebe7 12%, transparent 12.5%, transparent 87%, #e8ebe7 87.5%, #e8ebe7),
-      linear-gradient(150deg, #e8ebe7 12%, transparent 12.5%, transparent 87%, #e8ebe7 87.5%, #e8ebe7),
-      linear-gradient(30deg, #e8ebe7 12%, transparent 12.5%, transparent 87%, #e8ebe7 87.5%, #e8ebe7),
-      linear-gradient(150deg, #e8ebe7 12%, transparent 12.5%, transparent 87%, #e8ebe7 87.5%, #e8ebe7),
-      linear-gradient(60deg, #dde0dc 25%, transparent 25%, transparent 75%, #dde0dc 75%, #dde0dc),
-      linear-gradient(60deg, #dde0dc 25%, transparent 25%, transparent 75%, #dde0dc 75%, #dde0dc);
+      linear-gradient(30deg, #e3e9e4 12%, transparent 12.5%, transparent 87%, #e3e9e4 87.5%, #e3e9e4),
+      linear-gradient(150deg, #e3e9e4 12%, transparent 12.5%, transparent 87%, #e3e9e4 87.5%, #e3e9e4),
+      linear-gradient(30deg, #e3e9e4 12%, transparent 12.5%, transparent 87%, #e3e9e4 87.5%, #e3e9e4),
+      linear-gradient(150deg, #e3e9e4 12%, transparent 12.5%, transparent 87%, #e3e9e4 87.5%, #e3e9e4),
+      linear-gradient(60deg, #e8ece7 25%, transparent 25%, transparent 75%, #e8ece7 75%, #e8ece7),
+      linear-gradient(60deg, #e8ece7 25%, transparent 25%, transparent 75%, #e8ece7 75%, #e8ece7);
     background-size: 60px 104px;
     background-position: 0 0, 0 0, 30px 52px, 30px 52px, 0 0, 30px 52px;
     background-repeat: repeat;
-    opacity: 0.6;
   }
   .imigongo-card {
-    background: rgba(255,255,255,0.92);
-    backdrop-filter: saturate(120%) blur(8px);
-    border: 1px solid rgba(0,0,0,0.05);
+    background: rgba(255, 255, 255, 0.94);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 8px 40px rgba(6, 56, 41, 0.07);
+  }
+  .imigongo-divider {
+    background-image: radial-gradient(circle at 12px 12px, #c9d4cb 2.5px, transparent 3px),
+      linear-gradient(120deg, transparent 40%, #c9d4cb 41%, #c9d4cb 44%, transparent 45%);
+    background-size: 24px 24px;
+    height: 8px;
+    opacity: 0.5;
   }
 }
 
 @layer utilities {
-  .fade-in { animation: fade-in 0.25s ease-out both; }
-  .slide-up { animation: slide-up 0.3s ease-out both; }
-  @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
-  @keyframes slide-up { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  .animate-shimmer {
+    background: linear-gradient(90deg, #f0f1ed 25%, #fafaf8 50%, #f0f1ed 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s linear infinite;
+  }
 }
 
+/* Remove native form-control chrome; we style everything (PRD §7.4) */
+select, input[type='date'], input[type='time'] {
+  -webkit-appearance: none;
+  appearance: none;
+}
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #c5c9bf; border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: #a3a8a0; }
-
-select, input[type="date"], input[type="time"] { -webkit-appearance: none; appearance: none; }
-input[type="text"], input[type="email"], input[type="password"], input[type="tel"], input[type="number"], textarea { -webkit-appearance: none; appearance: none; }

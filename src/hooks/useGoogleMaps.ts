@@ -1,55 +1,41 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 
-interface UseGoogleMapsOptions {
-  apiKey?: string;
-  libraries?: string[];
-}
+const KEY = (import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined) ?? '';
 
-export function useGoogleMaps(options: UseGoogleMapsOptions = {}) {
-  const { apiKey = 'YOUR_GOOGLE_MAPS_API_KEY', libraries = ['places'] } = options;
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const scriptRef = useRef<HTMLScriptElement | null>(null);
+let loadPromise: Promise<boolean> | null = null;
 
-  useEffect(() => {
-    if (!apiKey || apiKey === 'YOUR_GOOGLE_MAPS_API_KEY' || apiKey.includes('demo')) {
-      return;
-    }
-    if (window.google?.maps) {
-      setIsLoaded(true);
-      return;
-    }
+function loadMaps(): Promise<boolean> {
+  if (!KEY) return Promise.resolve(false);
+  if (window.google?.maps) return Promise.resolve(true);
+  if (loadPromise) return loadPromise;
 
-    const existingScript = document.querySelector(`script[src*="maps.googleapis.com"]`);
-    if (existingScript) {
-      existingScript.addEventListener('load', () => setIsLoaded(true));
-      return;
-    }
-
+  loadPromise = new Promise((resolve) => {
     const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=${libraries.join(',')}`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(KEY)}&loading=async&v=weekly`;
     script.async = true;
-    script.defer = true;
-    
-    script.onload = () => {
-      setIsLoaded(true);
-      setError(null);
-    };
-    
-    script.onerror = () => {
-      setError('Failed to load Google Maps');
-      setIsLoaded(false);
-    };
-
+    script.onload = () => resolve(!!window.google?.maps);
+    script.onerror = () => resolve(false);
     document.head.appendChild(script);
-    scriptRef.current = script;
-  }, [apiKey, libraries]);
-
-  return { isLoaded, error };
+  });
+  return loadPromise;
 }
 
-declare global {
-  interface Window {
-    google: any;
-  }
+/** True when no API key is configured (used to render the designed empty state). */
+export function hasMapsKey(): boolean {
+  return KEY.length > 0;
+}
+
+/** Loads the Maps JS API once; resolves false when key missing or script failed. */
+export function useGoogleMaps(): { loaded: boolean } {
+  const [loaded, setLoaded] = useState(false);
+  useEffect(() => {
+    let mounted = true;
+    loadMaps().then((ok) => {
+      if (mounted) setLoaded(ok);
+    });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+  return { loaded };
 }

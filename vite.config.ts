@@ -7,6 +7,18 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 3000,
+    // Dev proxy: frontend talks to the API + WebSocket on the same origin.
+    proxy: {
+      '/api': {
+        target: 'http://localhost:4000',
+        changeOrigin: true,
+      },
+      '/socket.io': {
+        target: 'http://localhost:4000',
+        changeOrigin: true,
+        ws: true,
+      },
+    },
   },
   resolve: {
     alias: {

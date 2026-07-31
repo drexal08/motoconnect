@@ -1,46 +1,49 @@
 import { create } from 'zustand';
-
-export type UserRole = 'passenger' | 'rider';
-export type PlanTier = 'agahozo' | 'isonga' | 'impuruza';
+import { api, getToken, setToken, clearToken } from '../api/client';
+import type { MeResponse, User } from '../api/types';
 
 interface AuthState {
-  user: {
-    role: UserRole;
-    name: string;
-    phone: string;
-    nationalId?: string;
-    driversLicense?: string;
-    plate?: string;
-    plan: PlanTier;
-    requestCount: number;
-  } | null;
-  isAuthenticated: boolean;
-  errorMessage: string;
-  setUser: (u: AuthState['user'], role: UserRole) => void;
-  setPlan: (tier: PlanTier) => void;
-  addRequest: () => void;
-  clearError: () => void;
+  user: User | null;
+  riderVerification: 'pending_verification' | 'verified' | 'rejected' | null;
+  ready: boolean; // auth restored from storage
+  signIn: (token: string, user: User) => void;
+  refreshMe: () => Promise<void>;
   logout: () => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
-  isAuthenticated: false,
-  errorMessage: '',
-  setUser: (u, role) =>
-    set({
-      user: u ? { ...u, role } : null,
-      isAuthenticated: !!u,
-      errorMessage: '',
-    }),
-  setPlan: (tier) =>
-    set((s) => ({
-      user: s.user ? { ...s.user, plan: tier } : null,
-    })),
-  addRequest: () =>
-    set((s) => ({
-      user: s.user ? { ...s.user, requestCount: s.user.requestCount + 1 } : null,
-    })),
-  clearError: () => set({ errorMessage: '' }),
-  logout: () => set({ user: null, isAuthenticated: false, errorMessage: '' }),
+  riderVerification: null,
+  ready: false,
+
+  signIn: (token, user) => {
+    setToken(token);
+    set({ user, ready: true });
+  },
+
+  refreshMe: async () => {
+    if (!getToken()) {
+      set({ user: null, ready: true });
+      return;
+    }
+    try {
+      const me = await api<MeResponse>('/api/auth/me');
+      set({
+        user: me.user,
+        riderVerification: me.riderProfile?.verificationStatus ?? null,
+        ready: true,
+      });
+    } catch {
+      clearToken();
+      set({ user: null, riderVerification: null, ready: true });
+    }
+  },
+
+  logout: () => {
+    clearToken();
+    set({ user: null, riderVerification: null, ready: true });
+  },
 }));
+
+// Restore the session once on app boot.
+useAuthStore.getState().refreshMe();

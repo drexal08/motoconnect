@@ -1,0 +1,510 @@
+openapi: 3.0.3
+info:
+  title: MotoConnect API
+  version: 2.0.0
+  description: |
+    Real-time moto-taxi matching for Rwanda. Phone+OTP auth, PostGIS-backed
+    geo-matching, PayPack (MTN MoMo + Airtel Money) subscriptions.
+    Privacy boundary (§3.2 of the PRD): riders only ever receive jittered
+    marker positions + distance band + direction; exact pickup coordinates are
+    returned only to the confirming rider after the passenger confirms.
+servers:
+  - url: http://localhost:4000
+    description: Local development (frontend proxies /api and /socket.io)
+tags:
+  - name: auth
+  - name: riders
+  - name: requests
+  - name: payments
+  - name: consent
+security:
+  - bearerAuth: []
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Error:
+      type: object
+      properties:
+        error: { type: string, description: Plain-English message (PRD §2 tone) }
+        code: { type: string }
+    Phone:
+      type: string
+      pattern: '^(\+250|0)7[2389]\d{7}$'
+      example: '+250788123456'
+    User:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        phone: { $ref: '#/components/schemas/Phone' }
+        name: { type: string }
+        role: { type: string, enum: [passenger, rider] }
+        consent:
+          type: object
+          properties:
+            granted: { type: boolean }
+            reconfirmRequired: { type: boolean }
+    RequestStatus:
+      type: string
+      enum: [CREATED, VISIBLE, CLAIMED, CONFIRMED, EN_ROUTE, ARRIVED, COMPLETED,
+             EXPIRED, EXPIRED_UNCLAIMED, CANCELLED_BY_PASSENGER, CANCELLED_BY_RIDER, NO_SHOW]
+    PoolItem:
+      type: object
+      description: Anonymized pool entry — jittered position, distance band, direction. Never exact coordinates.
+      properties:
+        id: { type: string, format: uuid }
+        lat: { type: number, description: Jittered (150–200 m offset), NOT the real pickup }
+        lng: { type: number }
+        distanceBandM: { type: number, example: 400, description: 'Rounded to 100 m: "~400 m away"' }
+        direction: { type: string, enum: [N, NE, E, SE, S, SW, W, NW] }
+        destinationNote: { type: [string, 'null'] }
+        createdAt: { type: string, format: date-time }
+    Subscription:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        tier: { type: string, enum: [agahozo, isonga, impuruza] }
+        claimsUsed: { type: integer }
+        claimsCap: { type: [integer, 'null'], description: 'null = unlimited (Impuruza)' }
+        expiresAt: { type: string, format: date-time }
+        status: { type: string }
+    Payment:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        provider: { type: string, enum: [paypack] }
+        amount: { type: integer, description: RWF }
+        status: { type: string, enum: [pending, success, failed] }
+        tier: { type: string, enum: [agahozo, isonga, impuruza] }
+        providerRef: { type: [string, 'null'] }
+        createdAt: { type: string, format: date-time }
+        completedAt: { type: [string, 'null'] }
+
+paths:
+  /health:
+    get:
+      tags: [auth]
+      security: []
+      summary: Liveness probe
+      responses:
+        '200': { description: OK }
+
+  /api/auth/request-otp:
+    post:
+      tags: [auth]
+      security: []
+      summary: Send a 6-digit code to a phone number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone]
+              properties:
+                phone: { $ref: '#/components/schemas/Phone' }
+      responses:
+        '200':
+          description: Code sent (devCode returned only in non-production)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  devCode: { type: string }
+        '429': { $ref: '#/components/responses/Error' }
+
+  /api/auth/verify-otp:
+    post:
+      tags: [auth]
+      security: []
+      summary: Verify the code. First verification creates the passenger account.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone, code]
+              properties:
+                phone: { $ref: '#/components/schemas/Phone' }
+                code: { type: string, pattern: '^\d{6}$' }
+                name: { type: string, minLength: 2, maxLength: 50, description: Required only on first verification (signup) }
+                termsAccepted: { type: boolean, description: Required only on first verification (signup) }
+      responses:
+        '200':
+          description: Signed in
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+                  user: { $ref: '#/components/schemas/User' }
+        '400': { $ref: '#/components/responses/Error' }
+
+  /api/auth/me:
+    get:
+      tags: [auth]
+      summary: Current user + rider profile status
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user: { $ref: '#/components/schemas/User' }
+                  riderProfile:
+                    type: [object, 'null']
+                    properties:
+                      verificationStatus: { type: string, enum: [pending_verification, verified, rejected] }
+
+  /api/riders/apply:
+    post:
+      tags: [riders]
+      summary: Apply as a motorcyclist. Account becomes pending_verification until a human verifies the National ID and licence (launch blocker per PRD §4.2).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nationalId, licenseNumber, plateNumber]
+              properties:
+                nationalId: { type: string, pattern: '^1\d{15}$', description: '16 digits starting with 1' }
+                licenseNumber: { type: string, minLength: 4, description: 'Format TBD with RNP — open question, not hardcoded' }
+                plateNumber: { type: string, pattern: '^R[A-Z]\d{3}[A-Z]$', example: 'RAD123B' }
+      responses:
+        '200':
+          description: Application received
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  verificationStatus: { type: string }
+                  message: { type: string }
+        '400': { $ref: '#/components/responses/Error' }
+
+  /api/riders/status:
+    get:
+      tags: [riders]
+      summary: Verification status, active subscription, unrated rides
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: object
+                    properties:
+                      verificationStatus: { type: string }
+                      reliabilityScore: { type: number }
+                      claimSuspendedUntil: { type: [string, 'null'] }
+                  subscription: { type: [object, 'null'], $ref: '#/components/schemas/Subscription' }
+                  unrated: { type: [object, 'null'] }
+        '404': { $ref: '#/components/responses/Error' }
+
+  /api/requests:
+    post:
+      tags: [requests]
+      summary: Passenger creates a ride request. Exact pickup stays server-side; riders see only the anonymized marker.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [pickup]
+              properties:
+                pickup:
+                  type: object
+                  required: [lat, lng]
+                  properties:
+                    lat: { type: number, minimum: -90, maximum: 90 }
+                    lng: { type: number, minimum: -180, maximum: 180 }
+                accuracyM: { type: number, maximum: 500 }
+                destinationNote: { type: string, maxLength: 120 }
+      responses:
+        '201':
+          description: Request created and visible to nearby riders
+        '403':
+          description: Location consent missing or needs re-confirmation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code: { type: string, enum: [LOCATION_CONSENT_REQUIRED, LOCATION_CONSENT_REFRESH_REQUIRED] }
+        '409': { $ref: '#/components/responses/Error' }
+
+  /api/requests/pool:
+    get:
+      tags: [requests]
+      summary: 'Rider only. Anonymized pool near the rider''s last location: jittered markers + distance band + direction.'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  locationKnown: { type: boolean }
+                  pool:
+                    type: array
+                    items: { $ref: '#/components/schemas/PoolItem' }
+        '403': { $ref: '#/components/responses/Error' }
+
+  /api/requests/{id}/claim:
+    post:
+      tags: [requests]
+      summary: |
+        Rider claims a request. Database-level compare-and-swap (§6.4):
+        single UPDATE guarded by WHERE status='VISIBLE'; 60 s exclusive
+        window, passenger must confirm within 30 s.
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  claimedAt: { type: string, format: date-time }
+        '409': { $ref: '#/components/responses/Error' }
+
+  /api/requests/{id}/confirm:
+    post:
+      tags: [requests]
+      summary: |
+        Passenger confirms the claiming rider. Only here is a claim consumed
+        against the rider's quota (§5.2, enforced server-side atomically) and
+        only here are exact coordinates revealed to that rider (§3.2).
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Confirmed }
+        '409': { $ref: '#/components/responses/Error' }
+
+  /api/requests/{id}/action:
+    post:
+      tags: [requests]
+      summary: Rider lifecycle actions: enroute, arrived, no_show (min 5 min wait), complete, cancel
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [action]
+              properties:
+                action: { type: string, enum: [enroute, arrived, no_show, complete, cancel] }
+      responses:
+        '200': { description: State transition applied (WS event broadcast to both parties) }
+        '409': { $ref: '#/components/responses/Error' }
+
+  /api/requests/{id}:
+    delete:
+      tags: [requests]
+      summary: Passenger cancels. Free for the first 2 cancellations/week, soft warning after (§6.1).
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason: { type: string, maxLength: 200 }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string }
+                  warning: { type: [string, 'null'] }
+
+  /api/requests/active:
+    get:
+      tags: [requests]
+      summary: Both sides. Current open ride + unrated completed ride (rating gate).
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  active:
+                    type: [object, 'null']
+                    properties:
+                      id: { type: string, format: uuid }
+                      status: { $ref: '#/components/schemas/RequestStatus' }
+                      pickup: { type: object, description: 'Exact pickup — safe for both parties at this stage' }
+                      rider: { type: [object, 'null'] }
+                  unrated: { type: [object, 'null'] }
+
+  /api/requests/{id}/rate:
+    post:
+      tags: [requests]
+      summary: Mandatory 2-way rating after COMPLETED (§6.3) — new requests/claims are blocked until rated.
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [stars]
+              properties:
+                stars: { type: integer, minimum: 1, maximum: 5 }
+                comment: { type: string, maxLength: 280 }
+      responses:
+        '200': { description: Rated }
+
+  /api/payments/demand:
+    get:
+      tags: [payments]
+      summary: §5.4 — aggregate demand count near the rider (no positions). Shown before buying a plan.
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  visibleRequests: { type: integer }
+                  nearMe: { type: [integer, 'null'] }
+
+  /api/payments/subscriptions/purchase:
+    post:
+      tags: [payments]
+      summary: Buy a plan. Initiates a PayPack cashin (MTN MoMo / Airtel Money) to the payer phone.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [tier, phone]
+              properties:
+                tier: { type: string, enum: [agahozo, isonga, impuruza] }
+                phone: { type: string, description: Mobile money number to pay from }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  paymentId: { type: string, format: uuid }
+                  pending: { type: boolean }
+
+  /api/payments/{id}:
+    get:
+      tags: [payments]
+      summary: Poll payment status while the payer approves on their phone.
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { $ref: '#/components/schemas/Payment' }
+
+  /api/payments/paypack-webhook:
+    post:
+      tags: [payments]
+      security: []
+      summary: |
+        PayPack webhook (transaction:processed). Idempotent: unique
+        provider_ref + status guard + event-id dedupe — duplicate deliveries
+        cannot double-credit a subscription (§8.4). HMAC-signed body
+        (x-paypack-signature).
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200': { description: Acknowledged (incl. duplicates) }
+        '401': { description: Bad HMAC signature }
+
+  /api/payments/subscriptions/cancel:
+    post:
+      tags: [payments]
+      summary: Cancel the active plan.
+      responses:
+        '200': { description: Cancelled }
+
+  /api/payments/subscriptions:
+    get:
+      tags: [payments]
+      summary: Active plan, if any.
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  subscription: { type: [object, 'null'], $ref: '#/components/schemas/Subscription' }
+
+  /api/consent/grant:
+    post:
+      tags: [consent]
+      summary: §3.3/§11 — explicit location consent (re-confirmed every 90 days).
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  granted: { type: boolean }
+                  reconfirmAt: { type: string, format: date-time }
+
+  /api/consent/revoke:
+    post:
+      tags: [consent]
+      summary: Withdraw location consent. Blocks requesting/accepting rides while off.
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  granted: { type: boolean }
+
+responses:
+  Error:
+    description: Plain-English error
+    content:
+      application/json:
+        schema: { $ref: '#/components/schemas/Error' }
+
+# ─── WebSocket events (Socket.IO, /socket.io) ─────────────────────────────────
+# auth:  { auth: { token } }
+# client → server:
+#   location:tick  { lat, lng, heading?, speed? }   (persisted; after CONFIRMED,
+#                    rider ticks are relayed to the passenger ~1 per 2 s)
+# server → rider:
+#   pool:update    { pool: PoolItem[], locationKnown, now }   (on join + heartbeat 5 s)
+#   pool:notice    { id, status }                             (pool bookkeeping)
+#   request:event  { id, status, pickup?, passengerName? }    (pickup only on CONFIRMED)
+# server → passenger:
+#   request:event  { id, status, rider? }                     (rider card on CLAIMED/CONFIRMED)
+#   rider:location { lat, lng, heading, speed, at }           (post-CONFIRMED only)
