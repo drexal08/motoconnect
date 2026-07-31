@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthStore } from '../store/useAuthStore';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -13,14 +13,14 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   allowedRoles,
   redirectTo = '/login',
 }) => {
-  const { user, isAuthenticated } = useAuth();
+  const auth = useAuthStore();
 
-  if (!isAuthenticated) {
+  if (!auth.isAuthenticated) {
     return <Navigate to={redirectTo} replace />;
   }
 
-  if (allowedRoles && user && !allowedRoles.includes(user.role)) {
-    const fallbackPath = user.role === 'passenger' ? '/passenger' : '/rider';
+  if (allowedRoles && auth.user && !allowedRoles.includes(auth.user.role)) {
+    const fallbackPath = auth.user.role === 'passenger' ? '/passenger' : '/rider';
     return <Navigate to={fallbackPath} replace />;
   }
 

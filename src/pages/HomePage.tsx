@@ -230,7 +230,7 @@ const HomePage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
             <div>
-              <div className="mb-4"><LogoFull size="sm" variant="white" /></div>
+              <div className="mb-4"><LogoFull size="sm" variant="light" /></div>
               <p className="text-xs leading-relaxed text-gray-500">Rwanda's leading motorcycle ride-sharing platform. Connecting passengers with trusted riders.</p>
             </div>
             <div>
