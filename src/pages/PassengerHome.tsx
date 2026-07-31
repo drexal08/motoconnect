@@ -1,4 +1,5 @@
 import { useLocationStore } from '../store/useLocationStore';
+import MapComponent from '../components/MapComponent';
 import { MapPin, Navigation, ShieldCheck, User } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
 import { LogoFull } from '../components/Logo';
@@ -72,6 +73,10 @@ export default function PassengerHome() {
               </button>
             </div>
           )}
+        </section>
+        <section className="imigongo-card rounded-3xl p-4 shadow-xl shadow-emerald-950/5 mb-5 slide-up" style={{ animationDelay: "0.15s" }}>
+          <h3 className="font-extrabold text-emerald-950 mb-2 text-sm flex items-center gap-2"><MapPin size={16} /> Live Map</h3>
+          <div className="rounded-2xl overflow-hidden"><MapComponent height="260px" interactive={false} showMyLocation={loc.permissionGranted} defaultCenter={{ lat: loc.params.lat, lng: loc.params.lng }} /></div>
         </section>
 
         {/* Quick Info */}

@@ -31,7 +31,7 @@ export default function LoginPage() {
       requestCount: 0,
     }, 'passenger');
     setSubmitting(false);
-    navigate('/passenger');
+    navigate(auth.user?.role === 'rider' ? '/rider' : '/passenger');
   };
 
   return (

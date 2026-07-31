@@ -1,5 +1,6 @@
 import { useAuthStore, PlanTier } from '../store/useAuthStore';
 import { Bike, Zap, ShieldCheck, Check, Radio, User } from 'lucide-react';
+import MapComponent from '../components/MapComponent';
 import { LogoFull } from '../components/Logo';
 
 const PLANS: { key: PlanTier; label: string; price: string; cap: number; desc: string; highlight?: boolean }[] = [
@@ -9,9 +10,9 @@ const PLANS: { key: PlanTier; label: string; price: string; cap: number; desc: s
 ];
 
 const SAMPLES = [
-  { id: 1, name: 'Alice', dist: '0.3 km', status: 'Waiting' },
-  { id: 2, name: 'Brian', dist: '0.7 km', status: 'Moving' },
-  { id: 3, name: 'Claire', dist: '1.1 km', status: 'Waiting' },
+  { id: 1, name: 'Passenger A', dist: '0.3 km', status: 'Waiting' },
+  { id: 2, name: 'Passenger B', dist: '0.7 km', status: 'Moving' },
+  { id: 3, name: 'Passenger C', dist: '1.1 km', status: 'Waiting' },
 ];
 
 export default function RiderHome() {
@@ -87,6 +88,7 @@ export default function RiderHome() {
               <h2 className="text-lg font-extrabold text-emerald-950 leading-tight">Live Passengers</h2>
               <p className="text-xs font-medium text-emerald-800/60">Claim pings near you</p>
             </div>
+            <div className="mb-4"><MapComponent height="260px" interactive={false} markers={SAMPLES.map(s => ({ id: String(s.id), lat: -1.94 + (Math.random()*0.05 - 0.025), lng: 30.06 + (Math.random()*0.05 - 0.025), name: s.name, phone: "+250 78 123 4567", destination: "Nearby", timestamp: Date.now() }))} /></div>
           </div>
 
           <div className="space-y-3">
