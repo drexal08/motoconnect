@@ -22,9 +22,8 @@ export default function LoginPage() {
       return;
     }
     setSubmitting(true);
-    // Demo login flow (backend integration point)
     auth.setUser({
-      name: 'Demo User',
+      name: 'User',
       phone: phone.trim(),
       plan: 'agahozo',
       role: 'passenger',
