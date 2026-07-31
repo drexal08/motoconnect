@@ -88,12 +88,12 @@ export default function RiderHome() {
               <h2 className="text-lg font-extrabold text-emerald-950 leading-tight">Live Passengers</h2>
               <p className="text-xs font-medium text-emerald-800/60">Claim pings near you</p>
             </div>
-            <div className="mb-4"><MapComponent height="260px" interactive={false} markers={SAMPLES.map(s => ({ id: String(s.id), lat: -1.94 + (Math.random()*0.05 - 0.025), lng: 30.06 + (Math.random()*0.05 - 0.025), name: s.name, phone: "+250 78 123 4567", destination: "Nearby", timestamp: Date.now() }))} /></div>
+            <div className="mb-4"><MapComponent height="260px" interactive={false} markers={SAMPLES.map((s,i) => ({ id: String(s.id), lat: -1.94 + (i*0.015 - 0.02), lng: 30.06 + (i*0.015 - 0.02), name: s.name, phone: "+250 78 123 4567", destination: "Nearby", timestamp: Date.now() }))} /></div>
           </div>
 
           <div className="space-y-3">
             {SAMPLES.map(p => (
-              <button key={p.id} onClick={() => auth.addRequest()} className="w-full flex items-center gap-3 p-3 rounded-2xl bg-white border border-emerald-100 hover:border-amber-300 hover:shadow transition text-left">
+              <button key={p.id} onClick={() => { if(auth.user){ auth.addRequest(); } else { alert("Please sign up first."); } }} className="w-full flex items-center gap-3 p-3 rounded-2xl bg-white border border-emerald-100 hover:border-amber-300 hover:shadow transition text-left">
                 <div className="w-10 h-10 rounded-full bg-emerald-50 text-emerald-900 flex items-center justify-center shrink-0">
                   <User size={18} />
                 </div>
