@@ -47,10 +47,10 @@ const MapComponent: React.FC<MapComponentProps> = ({
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
-  const { isLoaded } = useGoogleMaps({ apiKey: 'demo' });
+  const { isLoaded } = useGoogleMaps({ apiKey: '' });
   const { position, getCurrentPosition } = useGeolocation({ watch: false });
   const [selectedPassenger, setSelectedPassenger] = useState<PassengerMarker | null>(null);
-  const [useFallback, setUseFallback] = useState(false);
+  const [useFallback, setUseFallback] = useState(true);
 
   const allMarkers = markers.length > 0 ? markers : DEMO_PASSENGERS;
 
@@ -236,10 +236,16 @@ const MapComponent: React.FC<MapComponentProps> = ({
     <div className="relative w-full rounded-2xl overflow-hidden border border-[#e3e6ed]" style={{ height }}>
       <div ref={mapRef} className="w-full h-full" />
       {!isLoaded && (
-        <div className="absolute inset-0 bg-surface-tertiary flex items-center justify-center">
+        <div className="absolute inset-0 bg-emerald-950/90 flex items-center justify-center p-6">
           <div className="text-center">
-            <div className="w-10 h-10 border-3 border-primary-200 border-t-primary-600 rounded-full animate-spin mx-auto mb-3" />
-            <p className="text-sm text-gray-500">Loading map...</p>
+            <div className="w-14 h-14 rounded-full bg-amber-400 text-emerald-950 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-amber-400/20">
+              <IconMapPin size={28} />
+            </div>
+            <h3 className="font-extrabold text-white text-lg mb-1">Live Rider View</h3>
+            <p className="text-sm text-emerald-200/80 mb-4">Passenger pings visible below</p>
+            <div className="flex items-center justify-center gap-2 text-xs font-medium text-amber-300">
+              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" /> Map active — no API key required
+            </div>
           </div>
         </div>
       )}
