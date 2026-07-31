@@ -150,10 +150,9 @@ const HomePage: React.FC = () => {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { name: 'Free', price: '0', views: '3', duration: '7 days', color: 'bg-gray-50' },
-              { name: 'Basic', price: '500', views: '10', duration: '2 hours', color: 'bg-primary-50' },
-              { name: 'Pro', price: '1,000', views: '25', duration: '6 hours', color: 'bg-primary-50', popular: true },
-              { name: 'Max', price: '3,500', views: 'Unlimited', duration: '24 hours', color: 'bg-amber-50' },
+              { name: 'Agahozo', price: '500', views: '10', duration: 'Daily', color: 'bg-emerald-50', popular: false },
+              { name: 'Isonga', price: '3,000', views: '80', duration: 'Weekly', color: 'bg-amber-50', popular: true },
+              { name: 'Impuruza', price: '10,000', views: 'Unlimited', duration: 'Monthly', color: 'bg-emerald-50', popular: false },
             ].map((plan, i) => (
               <div key={i} className={`relative bg-white rounded-2xl border border-[#e3e6ed] p-5 hover:shadow-sm transition-all ${plan.popular ? 'ring-1 ring-primary-200' : ''}`}>
                 {plan.popular && (
@@ -230,7 +229,7 @@ const HomePage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
             <div>
-              <div className="mb-4"><LogoFull size="sm" variant="white" /></div>
+              <div className="mb-4"><LogoFull size="sm" variant="light" /></div>
               <p className="text-xs leading-relaxed text-gray-500">Rwanda's leading motorcycle ride-sharing platform. Connecting passengers with trusted riders.</p>
             </div>
             <div>

@@ -12,6 +12,9 @@ export function useGoogleMaps(options: UseGoogleMapsOptions = {}) {
   const scriptRef = useRef<HTMLScriptElement | null>(null);
 
   useEffect(() => {
+    if (!apiKey || apiKey === 'YOUR_GOOGLE_MAPS_API_KEY' || apiKey.includes('demo')) {
+      return;
+    }
     if (window.google?.maps) {
       setIsLoaded(true);
       return;

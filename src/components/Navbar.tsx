@@ -13,16 +13,16 @@ import {
   IconLocation,
   IconLogin,
 } from './Icons';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthStore } from '../store/useAuthStore';
 
 const Navbar: React.FC = () => {
-  const { user, logout, isAuthenticated } = useAuth();
+  const auth = useAuthStore();
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleLogout = () => {
-    logout();
+    auth.logout();
     setMobileOpen(false);
     navigate('/');
   };
@@ -45,18 +45,18 @@ const Navbar: React.FC = () => {
   );
 
   const getDashboardPath = () => {
-    if (!user) return '/';
-    return user.role === 'passenger' ? '/passenger' : '/rider';
+    if (!auth.user) return '/';
+    return auth.user?.role === 'passenger' ? '/passenger' : '/rider';
   };
 
   const getDashboardLabel = () => {
-    if (!user) return 'Dashboard';
-    return user.role === 'passenger' ? 'My Rides' : 'Find Passengers';
+    if (!auth.user) return 'Dashboard';
+    return auth.user?.role === 'passenger' ? 'My Rides' : 'Find Passengers';
   };
 
   const getDashboardIcon = () => {
-    if (!user) return <IconGrid size={18} />;
-    return user.role === 'passenger' ? <IconLocation size={18} /> : <IconMapPin size={18} />;
+    if (!auth.user) return <IconGrid size={18} />;
+    return auth.user?.role === 'passenger' ? <IconLocation size={18} /> : <IconMapPin size={18} />;
   };
 
   const roleBadge: Record<string, { label: string; color: string }> = {
@@ -74,21 +74,21 @@ const Navbar: React.FC = () => {
 
           <div className="hidden md:flex items-center gap-1">
             {navLink('/', 'Home', <IconHome size={18} />)}
-            {isAuthenticated && navLink(getDashboardPath(), getDashboardLabel(), getDashboardIcon())}
-            {isAuthenticated && user?.role === 'rider' && navLink('/pricing', 'Pricing', <IconBuy size={18} />)}
+            {auth.isAuthenticated && navLink(getDashboardPath(), getDashboardLabel(), getDashboardIcon())}
+            {auth.isAuthenticated && auth.user?.role === 'rider' && navLink('/pricing', 'Pricing', <IconBuy size={18} />)}
           </div>
 
           <div className="hidden md:flex items-center gap-2.5">
-            {isAuthenticated ? (
+            {auth.isAuthenticated ? (
               <>
                 <div className="flex items-center gap-2.5 border border-[#e3e6ed] rounded-full pl-1 pr-3 py-1">
                   <div className="w-7 h-7 rounded-full bg-primary-100 flex items-center justify-center">
-                    <span className="text-primary-600 text-xs font-bold">{user?.name?.charAt(0)}</span>
+                    <span className="text-primary-600 text-xs font-bold">{auth.user?.name?.charAt(0)}</span>
                   </div>
                   <div className="flex flex-col leading-none">
-                    <span className="text-xs font-semibold text-gray-800">{user?.name?.split(' ')[0]}</span>
-                    <span className={`text-[9px] font-semibold mt-0.5 px-1.5 py-px rounded-full w-fit ${roleBadge[user?.role || 'passenger'].color}`}>
-                      {roleBadge[user?.role || 'passenger'].label}
+                    <span className="text-xs font-semibold text-gray-800">{auth.user?.name?.split(' ')[0]}</span>
+                    <span className={`text-[9px] font-semibold mt-0.5 px-1.5 py-px rounded-full w-fit ${roleBadge[auth.user?.role || 'passenger'].color}`}>
+                      {roleBadge[auth.user?.role || 'passenger'].label}
                     </span>
                   </div>
                 </div>
@@ -142,18 +142,18 @@ const Navbar: React.FC = () => {
         <div className="md:hidden border-t border-[#e3e6ed] bg-white animate-fade-in">
           <div className="px-4 py-3 space-y-1">
             {navLink('/', 'Home', <IconHome size={18} />)}
-            {isAuthenticated && navLink(getDashboardPath(), getDashboardLabel(), getDashboardIcon())}
-            {isAuthenticated && user?.role === 'rider' && navLink('/pricing', 'Pricing', <IconBuy size={18} />)}
+            {auth.isAuthenticated && navLink(getDashboardPath(), getDashboardLabel(), getDashboardIcon())}
+            {auth.isAuthenticated && auth.user?.role === 'rider' && navLink('/pricing', 'Pricing', <IconBuy size={18} />)}
             <hr className="my-2 border-[#e3e6ed]" />
-            {isAuthenticated ? (
+            {auth.isAuthenticated ? (
               <>
                 <div className="flex items-center gap-2.5 px-3 py-2">
                   <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center">
-                    <span className="text-primary-600 text-sm font-bold">{user?.name?.charAt(0)}</span>
+                    <span className="text-primary-600 text-sm font-bold">{auth.user?.name?.charAt(0)}</span>
                   </div>
                   <div>
-                    <div className="text-sm font-semibold text-gray-800">{user?.name}</div>
-                    <div className="text-xs text-gray-400">{user?.email}</div>
+                    <div className="text-sm font-semibold text-gray-800">{auth.user?.name}</div>
+                    <div className="text-xs text-gray-400">{auth.user?.phone}</div>
                   </div>
                 </div>
                 <Link

@@ -4,79 +4,81 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 228 14% 12%;
+    --background: 160 20% 97%;
+    --foreground: 220 20% 15%;
     --card: 0 0% 100%;
-    --card-foreground: 228 14% 12%;
+    --card-foreground: 220 20% 15%;
     --popover: 0 0% 100%;
-    --popover-foreground: 228 14% 12%;
-    --primary: 224 67% 25%;
+    --popover-foreground: 220 20% 15%;
+    --primary: 162 70% 22%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 220 14% 97%;
-    --secondary-foreground: 228 14% 12%;
-    --muted: 220 14% 97%;
-    --muted-foreground: 225 8% 45%;
-    --accent: 220 14% 97%;
-    --accent-foreground: 228 14% 12%;
-    --destructive: 0 84.2% 60.2%;
+    --secondary: 42 95% 54%;
+    --secondary-foreground: 220 20% 10%;
+    --muted: 160 10% 94%;
+    --muted-foreground: 220 10% 40%;
+    --accent: 42 95% 54%;
+    --accent-foreground: 220 20% 10%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 225 14% 90%;
-    --input: 225 14% 90%;
-    --ring: 224 67% 25%;
-    --radius: 0.625rem;
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 224 67% 25%;
+    --border: 160 10% 88%;
+    --input: 160 10% 88%;
+    --ring: 162 70% 22%;
+    --radius: 0.75rem;
+    --sidebar-background: 160 10% 97%;
+    --sidebar-foreground: 220 20% 15%;
+    --sidebar-primary: 162 70% 22%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 14% 97%;
-    --sidebar-accent-foreground: 228 14% 12%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 224 67% 25%;
+    --sidebar-accent: 42 95% 54%;
+    --sidebar-accent-foreground: 220 20% 10%;
+    --sidebar-border: 160 10% 88%;
+    --sidebar-ring: 162 70% 22%;
   }
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
-  html {
-    scroll-behavior: smooth;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
+  * { @apply border-border; }
+  html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
   body {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    color: #1a1d26;
-    background: #f7f8fa;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: #181a18;
+    background: #f6f7f4;
+  }
+}
+
+/* Minimalist digital Imigongo geometric pattern using light CSS gradients */
+@layer components {
+  .imigongo-bg {
+    background-color: #f6f7f4;
+    background-image:
+      linear-gradient(30deg, #e8ebe7 12%, transparent 12.5%, transparent 87%, #e8ebe7 87.5%, #e8ebe7),
+      linear-gradient(150deg, #e8ebe7 12%, transparent 12.5%, transparent 87%, #e8ebe7 87.5%, #e8ebe7),
+      linear-gradient(30deg, #e8ebe7 12%, transparent 12.5%, transparent 87%, #e8ebe7 87.5%, #e8ebe7),
+      linear-gradient(150deg, #e8ebe7 12%, transparent 12.5%, transparent 87%, #e8ebe7 87.5%, #e8ebe7),
+      linear-gradient(60deg, #dde0dc 25%, transparent 25%, transparent 75%, #dde0dc 75%, #dde0dc),
+      linear-gradient(60deg, #dde0dc 25%, transparent 25%, transparent 75%, #dde0dc 75%, #dde0dc);
+    background-size: 60px 104px;
+    background-position: 0 0, 0 0, 30px 52px, 30px 52px, 0 0, 30px 52px;
+    background-repeat: repeat;
+    opacity: 0.6;
+  }
+  .imigongo-card {
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: saturate(120%) blur(8px);
+    border: 1px solid rgba(0,0,0,0.05);
   }
 }
 
 @layer utilities {
-  .fade-in {
-    animation: fade-in 0.2s ease;
-  }
-  .slide-up {
-    animation: slide-up 0.3s ease;
-  }
+  .fade-in { animation: fade-in 0.25s ease-out both; }
+  .slide-up { animation: slide-up 0.3s ease-out both; }
+  @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slide-up { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 }
 
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #d1d5de; border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: #a8adb9; }
+::-webkit-scrollbar-thumb { background: #c5c9bf; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #a3a8a0; }
 
-select,
-input[type="date"],
-input[type="time"] {
-  -webkit-appearance: none;
-  appearance: none;
-}
-input[type="text"],
-input[type="email"],
-input[type="password"],
-input[type="tel"],
-input[type="number"],
-textarea {
-  -webkit-appearance: none;
-  appearance: none;
-}
+select, input[type="date"], input[type="time"] { -webkit-appearance: none; appearance: none; }
+input[type="text"], input[type="email"], input[type="password"], input[type="tel"], input[type="number"], textarea { -webkit-appearance: none; appearance: none; }
