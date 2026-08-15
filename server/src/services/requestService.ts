@@ -48,7 +48,7 @@ async function assertRiderCanClaim(riderId: string) {
   }
 
   const sub = await pool.query(
-    `SELECT tier, claims_used, claims_cap, expires_at FROM subscriptions
+    `SELECT id, tier, claims_used, claims_cap, expires_at FROM subscriptions
      WHERE rider_id = $1 AND status = 'active' AND expires_at > now()
      ORDER BY expires_at DESC LIMIT 1`,
     [riderId]
@@ -58,6 +58,17 @@ async function assertRiderCanClaim(riderId: string) {
   }
   const s = sub.rows[0];
   if (s.claims_cap !== null && Number(s.claims_used) >= Number(s.claims_cap)) {
+    // Admin spec §7.1: riders repeatedly hitting their cap are the upsell
+    // signal. Recorded where the cap is actually enforced — inferring it later
+    // from claim failures would be guesswork.
+    await pool
+      .query(
+        `INSERT INTO quota_block_events (rider_id, subscription_id, tier) VALUES ($1, $2, $3)`,
+        [riderId, s.id ?? null, s.tier]
+      )
+      .catch(() => {
+        /* telemetry only — never block a rider because a counter failed to write */
+      });
     throw errors.conflict('You have used all your claims for this plan. Renew or upgrade in Pricing.');
   }
 

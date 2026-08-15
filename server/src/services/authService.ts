@@ -5,6 +5,7 @@ import { verifyOtp as codesMatch } from '../lib/otp.js';
 import { signToken } from '../lib/jwt.js';
 import { config } from '../config.js';
 import { normalizePhone } from '../lib/phone.js';
+import { sendOtpSms } from './smsService.js';
 
 const RESEND_COOLDOWN_MS = 60_000;
 /** Per-phone in-memory rate limit: max 10 OTP requests per hour (single instance). */
@@ -64,10 +65,19 @@ export async function requestOtp(rawPhone: string): Promise<{ devCode?: string }
     [phone, hashOtp(code), new Date(Date.now() + OTP_TTL_MS)]
   );
 
-  // SMS delivery is not wired up yet (open question in PRD §10). In non-production
-  // the code is returned + logged so the whole flow is testable.
-  console.log(`[OTP] ${phone}: ${code}`);
+  // Delivery is honest about itself: with no provider configured the code is
+  // logged and `delivered` comes back false, so this can never look like a
+  // message that reached someone. See services/smsService.ts.
+  const sms = await sendOtpSms(phone, code);
+
+  // In development the code is returned so the flow is testable without a gateway.
   if (config.isDev) return { devCode: code };
+  if (!sms.delivered) {
+    throw errors.badRequest(
+      'We cannot send verification codes right now. Please contact support.',
+      'SMS_UNAVAILABLE'
+    );
+  }
   return {};
 }
 
@@ -79,9 +89,19 @@ export async function verifyOtp(
   const phone = normalizePhone(rawPhone);
   if (!phone) throw errors.badRequest('Enter a valid Rwandan phone number.');
 
+  // A time-limited suspension ends on its own; check at the point of use so a
+  // sign-in is never wrongly refused just because the sweeper has not run yet.
+  await pool.query(
+    `UPDATE users SET account_status = 'active', disabled = false, suspended_until = NULL
+     WHERE phone = $1 AND account_status = 'suspended'
+       AND suspended_until IS NOT NULL AND suspended_until <= now()`,
+    [phone]
+  );
+
   const { rows } = await pool.query(
     `SELECT id, name, role, otp_code_hash, otp_expires_at, otp_attempts,
-            location_consent_granted, consent_reconfirm_at, disabled
+            location_consent_granted, consent_reconfirm_at, disabled,
+            account_status, suspended_until
      FROM users WHERE phone = $1`,
     [phone]
   );
@@ -97,6 +117,8 @@ export async function verifyOtp(
         location_consent_granted: boolean;
         consent_reconfirm_at: Date | null;
         disabled: boolean;
+        account_status: 'active' | 'suspended' | 'banned';
+        suspended_until: Date | null;
       }
     | undefined;
 
@@ -115,13 +137,27 @@ export async function verifyOtp(
     );
     const { rows: fresh } = await pool.query(
       `SELECT id, name, role, otp_code_hash, otp_expires_at, otp_attempts,
-              location_consent_granted, consent_reconfirm_at, disabled
+              location_consent_granted, consent_reconfirm_at, disabled,
+              account_status, suspended_until
        FROM users WHERE phone = $1`,
       [phone]
     );
     row = fresh[0] as (typeof row) & NonNullable<typeof row>;
   }
 
+  // Plain English, and specific enough that the person knows what happened —
+  // an ops-console suspension is temporary and a ban is not.
+  if (row.account_status === 'banned') {
+    throw errors.forbidden('This account has been closed. Contact support if you think this is a mistake.');
+  }
+  if (row.account_status === 'suspended') {
+    const until = row.suspended_until ? new Date(row.suspended_until).toLocaleDateString() : null;
+    throw errors.forbidden(
+      until
+        ? `This account is paused until ${until}. Contact support if you think this is a mistake.`
+        : 'This account is paused. Contact support if you think this is a mistake.'
+    );
+  }
   if (row.disabled) throw errors.forbidden('This account has been disabled. Contact support.');
 
   if (!row.otp_code_hash || !row.otp_expires_at || new Date(row.otp_expires_at) < new Date()) {

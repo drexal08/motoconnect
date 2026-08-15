@@ -2,6 +2,7 @@
  * Thin fetch wrapper. The server returns plain-English error messages
  * (PRD §2 tone) — we surface them directly to the user.
  */
+import { apiUrl } from '../config';
 
 const TOKEN_KEY = 'motoconnect.token';
 
@@ -44,7 +45,7 @@ export async function api<T>(path: string, opts: ApiOptions = {}): Promise<T> {
 
   let res: Response;
   try {
-    res = await fetch(path, {
+    res = await fetch(apiUrl(path), {
       method: opts.method ?? 'GET',
       headers,
       body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,

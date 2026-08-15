@@ -145,6 +145,18 @@ async function handleLocationTick(io: Server, userId: string, tick: { lat: numbe
   if (now - state.lastTickAt < LOCATION_TICK_MS) return;
   state.lastTickAt = now;
 
+  // Admin spec §5.1 — breadcrumb trail for the live-ops map and for reviewing a
+  // fresh dispute. Short retention, pruned by the sweeper; this is not an
+  // archive of where anyone has been.
+  await pool.query(
+    `INSERT INTO ride_tracks (ride_request_id, user_id, lat, lng)
+     SELECT r.id, $1, $2, $3 FROM ride_requests r
+     WHERE (r.claimed_by = $1 OR r.passenger_id = $1)
+       AND r.status IN ('CLAIMED','CONFIRMED','EN_ROUTE','ARRIVED')
+     LIMIT 1`,
+    [userId, tick.lat, tick.lng]
+  );
+
   if (state.user.role === 'rider') {
     const ride = await pool.query(
       `SELECT passenger_id FROM ride_requests

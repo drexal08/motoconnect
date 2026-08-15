@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { io, type Socket } from 'socket.io-client';
 import { getToken } from '../api/client';
+import { SOCKET_URL } from '../config';
 import type { PoolItem, RequestEventPayload } from '../api/types';
 
 /**
@@ -33,10 +34,17 @@ export const useSocketStore = create<SocketState>((set) => ({
     const token = getToken();
     if (!token) return;
 
-    socket = io('/', {
+    socket = io(SOCKET_URL, {
       auth: { token },
       transports: ['websocket', 'polling'],
       autoConnect: true,
+      // The API sleeps on a free host and takes about a minute to wake, so a
+      // rider opening the app after a quiet spell must not be given up on.
+      reconnection: true,
+      reconnectionAttempts: Infinity,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 10_000,
+      timeout: 20_000,
     });
 
     socket.on('connect', () => set({ connected: true }));

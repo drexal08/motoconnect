@@ -1,0 +1,133 @@
+/* Leaflet's own stylesheet is imported from main.tsx rather than with @import
+   here: PostCSS requires @import to precede every other statement, which would
+   put a vendor stylesheet above the Tailwind layers and let it win cascade
+   fights it should lose. */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Ops console theme (admin spec §8).
+ *
+ * Deliberately NOT the consumer Emerald/Amber brand: a neutral slate chrome
+ * signals "you are in an internal tool" the moment the page loads. Green
+ * survives as the single accent — MotoConnect's accent colour — so the console
+ * still reads as the same company's product, alongside the Imigongo motif in
+ * the header rail. Density is dashboard-grade: an 8-32px spacing scale and
+ * 12-13px table type, sized for a laptop, not for outdoor mobile legibility.
+ */
+:root {
+  --ops-bg: #f1f5f9;          /* slate-100 */
+  --ops-surface: #ffffff;
+  --ops-rail: #0f172a;        /* slate-900 */
+  --ops-rail-muted: #94a3b8;  /* slate-400 */
+  --ops-border: #e2e8f0;      /* slate-200 */
+  --ops-ink: #0f172a;
+  --ops-muted: #64748b;       /* slate-500 */
+  --ops-accent: #0b6e4f;      /* MotoConnect green */
+  --ops-accent-soft: #e7f5f0;
+  --ops-danger: #b91c1c;
+  --ops-warn: #b45309;
+
+  --ops-space-1: 4px;
+  --ops-space-2: 8px;
+  --ops-space-3: 12px;
+  --ops-space-4: 16px;
+  --ops-space-6: 24px;
+  --ops-space-8: 32px;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: var(--ops-bg);
+    color: var(--ops-ink);
+    font-size: 14px;
+  }
+  /* The consumer app forces 16px controls to stop mobile zoom-on-focus. This is
+     a desktop tool (§8) and that rule would waste vertical space in dense forms. */
+  input, select, textarea, button {
+    font-size: inherit;
+  }
+  /* Never remove the focus ring — this console is keyboard-driven by design. */
+  :focus-visible {
+    outline: 2px solid var(--ops-accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  ::selection { background: #bbf7d0; }
+}
+
+@layer components {
+  /* Tabular figures keep IDs, money and timestamps aligned down a column. */
+  .ops-num { font-variant-numeric: tabular-nums; }
+  .ops-mono {
+    font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+  .ops-card {
+    background: var(--ops-surface);
+    border: 1px solid var(--ops-border);
+    border-radius: 12px;
+  }
+  /* Wide tables scroll inside their own container; the page body never does. */
+  .ops-table-wrap { overflow-x: auto; }
+  .ops-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; }
+  .ops-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: #f8fafc;
+    color: var(--ops-muted);
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--ops-border);
+    white-space: nowrap;
+  }
+  .ops-table tbody td {
+    padding: 9px 12px;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+  }
+  .ops-table tbody tr:hover { background: #f8fafc; }
+  .ops-table tbody tr[data-selected='true'] { background: var(--ops-accent-soft); }
+  .ops-table tbody tr[data-clickable='true'] { cursor: pointer; }
+
+  .ops-scroll::-webkit-scrollbar { width: 10px; height: 10px; }
+  .ops-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; border: 2px solid transparent; background-clip: content-box; }
+  .ops-scroll::-webkit-scrollbar-track { background: transparent; }
+}
+
+/* Leaflet defaults are tuned for consumer maps; tone them down for an ops view. */
+.leaflet-container {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: #e2e8f0;
+}
+.leaflet-container a.leaflet-popup-close-button { color: var(--ops-muted); }
+.ops-marker-label {
+  background: rgba(15, 23, 42, 0.92);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  border: none;
+  box-shadow: none;
+}
+.ops-marker-label::before { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

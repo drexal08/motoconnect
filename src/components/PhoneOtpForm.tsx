@@ -17,7 +17,9 @@ export default function PhoneOtpForm({
   verifyBody,
 }: {
   nextUrl: string;
-  onVerified?: (token: string, phone: string) => void;
+  /** Awaited before navigating, so follow-up work (e.g. creating the rider
+   *  profile) has finished before the next screen tries to read it. */
+  onVerified?: (token: string, phone: string) => void | Promise<void>;
   submitLabel?: string;
   /** Extra fields merged into the verify-otp request (name + terms on signup). */
   verifyBody?: Record<string, unknown>;
@@ -76,7 +78,7 @@ export default function PhoneOtpForm({
       });
       // Pull the full profile (incl. consent + rider verification status).
       void useAuthStore.getState().refreshMe();
-      onVerified?.(res.token, phone);
+      await onVerified?.(res.token, phone);
       navigate(nextUrl, { replace: true });
     } catch (e) {
       const err = e as ApiError;

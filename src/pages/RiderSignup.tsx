@@ -36,7 +36,8 @@ export default function RiderSignupPage() {
       setError('Enter your full driver licence number.');
       return;
     }
-    if (!/^R[A-Z]\d{3}[A-Z]$/.test(plateNumber.trim().toUpperCase())) {
+    // Three leading letters: RA + series letter, then 3 digits and a suffix.
+    if (!/^R[A-Z]{2}\d{3}[A-Z]$/.test(plateNumber.trim().toUpperCase().replace(/[\s-]/g, ''))) {
       setError('Plate numbers look like RAD123B. Check for typos.');
       return;
     }
@@ -140,11 +141,17 @@ export default function RiderSignupPage() {
               <Button fullWidth onClick={continueToOtp}>
                 Continue
               </Button>
+              <p className="text-xs text-ink/50 text-center">
+                Next you will photograph your ID, licence and plate so our team can check them.
+              </p>
             </div>
           ) : (
             <>
               <PhoneOtpForm
-                nextUrl="/rider/verification"
+                // Straight into document capture: the numbers just collected
+                // are unverifiable on their own, so the photos are part of
+                // signup rather than an optional afterthought.
+                nextUrl="/rider/documents"
                 submitLabel="Send me a code"
                 verifyBody={{ name: name.trim(), termsAccepted: terms }}
                 onVerified={onVerified}

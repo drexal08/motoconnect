@@ -7,6 +7,7 @@ import SignupPage from './pages/SignupPage'
 import PassengerSignup from './pages/PassengerSignup'
 import RiderSignup from './pages/RiderSignup'
 import RiderVerification from './pages/RiderVerification'
+import RiderDocuments from './pages/RiderDocuments'
 import PassengerHome from './pages/PassengerHome'
 import RiderHome from './pages/RiderHome'
 import PricingPage from './pages/PricingPage'
@@ -48,6 +49,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <RiderVerification />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/rider/documents"
+            element={
+              <ProtectedRoute>
+                <RiderDocuments />
               </ProtectedRoute>
             }
           />

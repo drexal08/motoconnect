@@ -1,0 +1,86 @@
+# Render blueprint for the MotoConnect API (Express + Socket.IO).
+#
+# Why the API is not on Vercel: it holds persistent WebSocket connections for
+# rider pool pushes and live ride tracking, and it runs a 5-second sweeper that
+# expires 60-second claim windows. Serverless functions can do neither.
+#
+# Free plan notes, so nothing here is a surprise later:
+#   • 750 instance-hours per month, and the service spins down after 15 minutes
+#     with no traffic. Waking takes about a minute; the owner has accepted that.
+#     No uptime pinger is needed — Neon wakes itself on the next connection, so
+#     nothing here depends on the service staying warm.
+#   • No persistent disk on the free plan. Rider ID photographs therefore go to
+#     Cloudflare R2, not to local disk — set the R2_* variables or they will be
+#     destroyed on every deploy.
+#   • SWEEP_INTERVAL_MS is the FAST tick. The sweeper drops to a 60-second tick
+#     when no rides are in flight, which lets Neon's compute scale to zero and
+#     keeps the monthly compute allowance comfortable. See services/sweeper.ts.
+
+services:
+  - type: web
+    name: motoconnect-api
+    runtime: node
+    plan: free
+    region: frankfurt # closest Render region to Rwanda
+    rootDir: server
+    # --include=dev is required: NODE_ENV=production below applies at build time
+    # too, and without it npm skips typescript and the build has no compiler.
+    buildCommand: npm ci --include=dev && npm run build
+    # `start` runs the migrations first, so a deploy never serves new code
+    # against an older schema.
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "22"
+
+      # ── Secrets: set these in the Render dashboard, never in this file ──
+      - key: DATABASE_URL
+        sync: false # Neon pooled connection string (?sslmode=require)
+      - key: JWT_SECRET
+        generateValue: true # Render generates a strong value on first deploy
+      - key: POSTMARK_SERVER_TOKEN
+        sync: false
+      - key: R2_ACCOUNT_ID
+        sync: false
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+
+      # ── Public configuration ──
+      - key: EMAIL_FROM
+        sync: false # must be a verified Postmark Sender Signature
+      - key: WEB_ORIGINS
+        sync: false # e.g. https://motoconnect.rw,https://ops.motoconnect.rw
+      - key: ADMIN_ORIGIN
+        sync: false # e.g. https://ops.motoconnect.rw
+      - key: ADMIN_CONSOLE_URL
+        sync: false # e.g. https://ops.motoconnect.rw
+      - key: ADMIN_SEED_EMAIL
+        value: byiringirinnocent8@gmail.com
+      - key: R2_BUCKET
+        value: rider-documents
+      - key: RIDER_DOCUMENT_RETENTION_DAYS
+        value: "365"
+      - key: SWEEP_INTERVAL_MS
+        value: "5000"
+      - key: SMS_PROVIDER
+        value: none # no gateway yet — consumer phone login cannot work until this is set
+
+      # ── PayPack (mobile money). Empty means simulated payments. ──
+      - key: PAYPACK_CLIENT_ID
+        sync: false
+      - key: PAYPACK_CLIENT_SECRET
+        sync: false
+      - key: PAYPACK_WEBHOOK_SECRET
+        sync: false
+      - key: PAYPACK_WEBHOOK_MODE
+        value: production
+      - key: PAYPACK_WEBHOOK_URL
+        sync: false
+      - key: PAYPACK_REFUND_ENABLED
+        value: "false" # no verified payout path yet — see README

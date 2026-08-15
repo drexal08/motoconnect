@@ -38,7 +38,9 @@ CREATE TABLE rider_profiles (
   user_id              uuid PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
   national_id          text NOT NULL CHECK (national_id ~ '^1\d{15}$'),
   license_number       text NOT NULL CHECK (char_length(license_number) >= 4),
-  plate_number         text NOT NULL CHECK (plate_number ~ '^R[A-Z]\d{3}[A-Z]$'),
+  -- Rwandan plates are RA<series letter> <3 digits> <suffix letter>, e.g. RAD123B.
+  -- That is THREE leading letters, not two.
+  plate_number         text NOT NULL CHECK (plate_number ~ '^R[A-Z]{2}\d{3}[A-Z]$'),
   verification_status  verification_status NOT NULL DEFAULT 'pending_verification',
   verified_at          timestamptz,
   rejection_reason     text,
