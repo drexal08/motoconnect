@@ -6,7 +6,7 @@ export default function PrivacyPage() {
     <div className="min-h-screen bg-surface pb-24">
       <div className="max-w-2xl mx-auto px-4 pt-10 prose-sm">
         <h1 className="text-3xl font-extrabold text-ink tracking-tight mb-2">Privacy policy</h1>
-        <p className="text-sm text-ink/50 mb-8">Last updated: 31 July 2026</p>
+        <p className="text-sm text-ink-subtle mb-8">Last updated: 31 July 2026</p>
 
         <Section title="1. What we collect">
           <p>Your phone number, name, and — only while you have an active ride — your location. Riders also provide a national ID number and plate number for verification.</p>

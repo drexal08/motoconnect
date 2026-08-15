@@ -7,6 +7,7 @@ import { useRideStore } from '../store/useRideStore';
 import { Button, CountdownRing, EmptyState, FormField, Input, Modal, Spinner } from '../components/ui';
 import MapView, { type MapMarker } from '../components/MapView';
 import ConsentGate from '../components/ConsentGate';
+import RideProgress from '../components/RideProgress';
 import { useSocketForRide } from '../hooks/useSocketForRide';
 import { ApiError } from '../api/client';
 
@@ -102,7 +103,7 @@ export default function PassengerHome() {
               <h1 className="text-2xl font-extrabold text-ink tracking-tight">
                 {status === 'IDLE' ? `Muraho, ${auth.user?.name?.split(' ')[0] ?? ''}!` : 'Your ride'}
               </h1>
-              <p className="text-sm text-ink/55">Find a nearby moto rider.</p>
+              <p className="text-sm text-ink-muted">Find a nearby moto rider.</p>
             </div>
             <div className="w-10 h-10 rounded-full bg-emerald-700 text-white flex items-center justify-center font-bold">
               {auth.user?.name?.charAt(0) ?? '?'}
@@ -139,7 +140,7 @@ export default function PassengerHome() {
           {status === 'VISIBLE' && (
             <section className="imigongo-card rounded-3xl p-6 text-center">
               <Spinner label={STATUS_COPY.VISIBLE.title} />
-              <p className="text-sm text-ink/55 max-w-sm mx-auto">{STATUS_COPY.VISIBLE.body}</p>
+              <p className="text-sm text-ink-muted max-w-sm mx-auto">{STATUS_COPY.VISIBLE.body}</p>
               <div className="mt-4 flex justify-center">
                 <Button variant="danger" onClick={() => setShowCancelModal(true)}>Cancel request</Button>
               </div>
@@ -154,13 +155,13 @@ export default function PassengerHome() {
                 </div>
                 <div className="flex-1">
                   <h2 className="font-bold text-ink text-lg leading-tight">{ride.active.rider?.name ?? 'A rider'}</h2>
-                  <div className="flex items-center gap-3 mt-1 text-sm text-ink/60">
+                  <div className="flex items-center gap-3 mt-1 text-sm text-ink-muted">
                     <span className="font-semibold text-ink/80">Plate {ride.active.rider?.plate ?? '—'}</span>
                     {ride.active.rider?.rating != null && (
                       <span className="inline-flex items-center gap-1"><Star size={14} className="text-amber-500 fill-amber-500" /> {Number(ride.active.rider.rating).toFixed(1)}</span>
                     )}
                   </div>
-                  <p className="text-sm text-ink/55 mt-1">This is the rider who wants to take you.</p>
+                  <p className="text-sm text-ink-muted mt-1">This is the rider who wants to take you.</p>
                 </div>
               </div>
               <div className="my-5">
@@ -176,19 +177,21 @@ export default function PassengerHome() {
           )}
 
           {(status === 'CONFIRMED' || status === 'EN_ROUTE' || status === 'ARRIVED') && ride.active && (
-            <section className="imigongo-card rounded-3xl p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-11 h-11 rounded-xl bg-amber-500 text-ink flex items-center justify-center">
-                  <Bike size={22} />
-                </div>
-                <div>
-                  <h2 className="font-bold text-ink">{STATUS_COPY[status]?.title ?? status}</h2>
-                  <p className="text-sm text-ink/55">
-                    {ride.active.rider?.name} · Plate {ride.active.rider?.plate ?? '—'}
-                  </p>
-                </div>
-              </div>
-              <p className="text-sm text-ink/60 mb-4">{STATUS_COPY[status]?.body}</p>
+            <>
+              {/*
+                The waiting screen. A passenger stands at the roadside watching
+                this, so the timeline shows where the ride has got to rather
+                than only naming the current state — and it announces each
+                change, which a colour shift alone never did.
+              */}
+              <RideProgress
+                status={status}
+                riderName={ride.active.rider?.name}
+                plate={ride.active.rider?.plate}
+                className="mb-4"
+              />
+              <section className="imigongo-card rounded-3xl p-6">
+              <p className="text-sm text-ink-muted mb-4">{STATUS_COPY[status]?.body}</p>
               {socket.riderLocation && (
                 <div className="flex items-center gap-2 text-sm font-semibold text-emerald-800 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3 mb-4">
                   <Navigation size={16} className="animate-pulse" />
@@ -202,7 +205,8 @@ export default function PassengerHome() {
               {status === 'ARRIVED' && (
                 <p className="text-sm font-semibold text-emerald-800">Look for the bike — your rider is waiting at the pickup point.</p>
               )}
-            </section>
+              </section>
+            </>
           )}
 
           <CancelModal
@@ -251,7 +255,7 @@ function IdleView({
   return (
     <section className="imigongo-card rounded-3xl p-6">
       <h2 className="font-bold text-ink text-lg mb-1">Request a ride</h2>
-      <p className="text-sm text-ink/55 mb-4">A rider near you will be asked to pick you up.</p>
+      <p className="text-sm text-ink-muted mb-4">A rider near you will be asked to pick you up.</p>
       <div className="space-y-4">
         <FormField label="Going to (optional)" htmlFor="dest" hint="A short note helps the rider find you, e.g. 'Kimihurura, near the gas station'.">
           <Input
@@ -264,7 +268,7 @@ function IdleView({
         </FormField>
         {locationError && <p className="text-sm font-medium text-amber-700">{locationError}</p>}
         {!myPos && !locationError && (
-          <p className="text-sm text-ink/50 flex items-center gap-2">
+          <p className="text-sm text-ink-subtle flex items-center gap-2">
             <MapPin size={16} className="animate-pulse text-emerald-700" /> Getting your location…
           </p>
         )}
@@ -356,7 +360,7 @@ function RateModal() {
       dismissible={false}
     >
       <div className="space-y-4">
-        <p className="text-sm text-ink/60">Your rating is mandatory — you cannot request another ride until you finish it.</p>
+        <p className="text-sm text-ink-muted">Your rating is mandatory — you cannot request another ride until you finish it.</p>
         <div className="flex justify-center gap-2">
           {[1, 2, 3, 4, 5].map((n) => (
             <button

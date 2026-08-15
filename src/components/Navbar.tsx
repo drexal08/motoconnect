@@ -38,7 +38,7 @@ export default function Navbar() {
               <button
                 onClick={logout}
                 aria-label="Sign out"
-                className="p-2 rounded-lg text-ink/50 hover:text-red-700 hover:bg-red-50 transition-colors"
+                className="p-2 rounded-lg text-ink-subtle hover:text-red-700 hover:bg-red-50 transition-colors"
               >
                 <LogOut size={18} />
               </button>

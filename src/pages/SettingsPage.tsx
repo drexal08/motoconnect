@@ -69,13 +69,13 @@ export default function SettingsPage() {
               </div>
               <div>
                 <h2 className="font-bold text-ink text-sm">Location sharing</h2>
-                <p className="text-xs text-ink/55">Used only while you have an active ride.</p>
+                <p className="text-xs text-ink-muted">Used only while you have an active ride.</p>
               </div>
             </div>
             <span
               className={
                 'text-xs font-bold rounded-full px-3 py-1 ' +
-                (location.watching ? 'bg-emerald-100 text-emerald-800' : 'bg-ink/10 text-ink/55')
+                (location.watching ? 'bg-emerald-100 text-emerald-800' : 'bg-ink/10 text-ink-muted')
               }
             >
               {location.watching ? 'ON' : 'OFF'}
@@ -107,7 +107,7 @@ export default function SettingsPage() {
             <ShieldCheck size={16} className="text-emerald-700 shrink-0" />
             <Link to="/terms" className="hover:underline">Terms of service</Link>
           </div>
-          <p className="text-xs text-ink/40 pt-2">MotoConnect v0.2.0</p>
+          <p className="text-xs text-ink-subtle pt-2">MotoConnect v0.2.0</p>
         </section>
       </div>
     </div>

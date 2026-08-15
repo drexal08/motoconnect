@@ -12,12 +12,12 @@ export default function LoginPage() {
             <LogoFull />
           </div>
           <h1 className="text-xl font-bold text-ink text-center mb-1">Welcome back</h1>
-          <p className="text-sm text-ink/55 text-center mb-6">
+          <p className="text-sm text-ink-muted text-center mb-6">
             Sign in with your phone number. No passwords to remember.
           </p>
           <PhoneOtpForm nextUrl="/" submitLabel="Send me a code" />
           <ImigongoDivider className="my-6" />
-          <p className="text-sm text-ink/55 text-center">
+          <p className="text-sm text-ink-muted text-center">
             New to MotoConnect?{' '}
             <Link to="/signup" className="font-semibold text-emerald-800 hover:underline">
               Create an account

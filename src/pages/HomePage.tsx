@@ -1,12 +1,27 @@
 import { Link } from 'react-router-dom';
 import { Bike, Clock3, MapPin, ShieldCheck, Smartphone, Star, User } from 'lucide-react';
 import MapView from '../components/MapView';
+import {
+  ImigongoBackground,
+  ImigongoBar,
+  ImigongoDivider,
+  ImigongoMotif,
+} from '../components/Imigongo';
 
-/** Landing page — no placeholder stats (§7.4). CTAs route to real flows. */
+/**
+ * Landing page — no placeholder stats (§7.4). CTAs route to real flows.
+ *
+ * The Imigongo treatment mirrors BusBook's: a very low-opacity nested-diamond
+ * background on the hero, motifs flanking each section heading, a diamond-chain
+ * divider between sections, and a zigzag bar above the footer. Same visual
+ * family, MotoConnect's green rather than BusBook's blue — the two products
+ * should read as siblings without wearing each other's colours.
+ */
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-surface">
-      <section className="imigongo-bg border-b border-border overflow-hidden">
+      <section className="relative imigongo-bg border-b border-border overflow-hidden">
+        <ImigongoBackground color="#0b6e4f" opacity={0.022} />
         <div className="max-w-5xl mx-auto px-4 pt-14 pb-10 sm:pt-20 text-center">
           <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 border border-emerald-100 px-4 py-1.5 text-xs font-bold text-emerald-800 uppercase tracking-wide">
             Rwanda's moto ride matching
@@ -16,7 +31,7 @@ export default function HomePage() {
             <br />
             <span className="text-emerald-700">in Rwanda</span>
           </h1>
-          <p className="mt-4 text-ink/60 max-w-lg mx-auto text-sm sm:text-base leading-relaxed">
+          <p className="mt-4 text-ink-muted max-w-lg mx-auto text-sm sm:text-base leading-relaxed">
             Share your location, match with a nearby verified rider, and go. Your exact pickup
             point is only revealed after you confirm your rider.
           </p>
@@ -35,15 +50,20 @@ export default function HomePage() {
             </Link>
           </div>
         </div>
-        <div className="max-w-3xl mx-auto px-4 pb-10">
+        <div className="relative max-w-3xl mx-auto px-4 pb-10">
           <div className="imigongo-card rounded-3xl p-3 shadow-xl">
             <MapView height="260px" />
           </div>
         </div>
+        <ImigongoDivider color="#0b6e4f" opacity={0.09} />
       </section>
 
       <section className="max-w-5xl mx-auto px-4 py-14">
-        <h2 className="text-center text-2xl font-extrabold text-ink tracking-tight mb-8">How it works</h2>
+        <h2 className="flex items-center justify-center gap-3 text-2xl font-extrabold text-ink tracking-tight mb-8">
+          <ImigongoMotif size={20} className="text-emerald-700" />
+          How it works
+          <ImigongoMotif size={20} className="text-emerald-700" />
+        </h2>
         <div className="grid sm:grid-cols-2 gap-8">
           <div>
             <h3 className="font-bold text-emerald-800 text-sm uppercase tracking-wide mb-4 flex items-center gap-2">
@@ -74,10 +94,15 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="bg-white border-t border-border py-14">
-        <div className="max-w-3xl mx-auto px-4 text-center">
-          <h2 className="text-2xl font-extrabold text-ink tracking-tight mb-3">Plans from 500 RWF</h2>
-          <p className="text-sm text-ink/55 max-w-md mx-auto mb-6">
+      <section className="relative bg-white border-t border-border py-14 overflow-hidden">
+        <ImigongoBackground color="#0b6e4f" opacity={0.018} />
+        <div className="relative max-w-3xl mx-auto px-4 text-center">
+          <h2 className="flex items-center justify-center gap-3 text-2xl font-extrabold text-ink tracking-tight mb-3">
+            <ImigongoMotif size={18} className="text-emerald-700" />
+            Plans from 500 RWF
+            <ImigongoMotif size={18} className="text-emerald-700" />
+          </h2>
+          <p className="text-sm text-ink-muted max-w-md mx-auto mb-6">
             Agahozo (500 RWF/day), Isonga (3,000 RWF/week), or Impuruza (10,000 RWF/month,
             unlimited claims). Claims only count once a passenger confirms you.
           </p>
@@ -90,7 +115,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      <footer className="bg-ink text-ink/70 py-10 mt-auto">
+      <ImigongoBar className="bg-ink" color="#ffffff" height={6} />
+      <footer className="bg-ink text-white/70 py-10 mt-auto">
         <div className="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
           <p className="font-semibold text-white">MotoConnect</p>
           <nav className="flex items-center gap-5">

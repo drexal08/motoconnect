@@ -66,7 +66,7 @@ export default function RiderHome() {
         <header className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-2xl font-extrabold text-ink tracking-tight">Rider radar</h1>
-            <p className="text-sm text-ink/55">
+            <p className="text-sm text-ink-muted">
               {plan.claimsCap === null
                 ? `${plan.claimsUsed} claims used · unlimited plan`
                 : `${plan.claimsUsed} of ${plan.claimsCap} claims used`}{' '}
@@ -98,13 +98,13 @@ export default function RiderHome() {
         <section className="imigongo-card rounded-3xl p-5">
           <div className="flex items-center gap-2 mb-3">
             <h2 className="font-bold text-ink text-base">Passengers near you</h2>
-            <span className="text-xs font-bold text-ink/40 bg-surface rounded-md px-2 py-0.5">
+            <span className="text-xs font-bold text-ink-subtle bg-surface rounded-md px-2 py-0.5">
               {socket.pool.length}
             </span>
           </div>
 
           {!socket.poolKnown && (
-            <p className="text-sm text-ink/50 flex items-center gap-2 py-4">
+            <p className="text-sm text-ink-subtle flex items-center gap-2 py-4">
               <Clock3 size={16} className="animate-pulse text-emerald-700" />
               Waiting for your location so we can find nearby requests…
             </p>
@@ -124,7 +124,7 @@ export default function RiderHome() {
             ))}
           </ul>
 
-          <p className="mt-4 text-xs text-ink/45 leading-relaxed">
+          <p className="mt-4 text-xs text-ink-subtle leading-relaxed">
             Marker positions are approximate (150–200 m) on purpose. Exact pickup points are only
             revealed to you after the passenger confirms you — this protects their privacy and
             yours.
@@ -161,7 +161,7 @@ function PoolRow({ item, busy, onClaim }: { item: PoolItem; busy: boolean; onCla
             ~{item.distanceBandM}m {item.direction}
           </span>
         </div>
-        <div className="flex items-center gap-3 text-xs text-ink/50 mt-0.5">
+        <div className="flex items-center gap-3 text-xs text-ink-subtle mt-0.5">
           <span className="inline-flex items-center gap-1">
             <Compass size={12} /> {item.direction}
           </span>
@@ -234,7 +234,7 @@ function ActiveRideView() {
             </div>
             <div>
               <h2 className="font-bold text-ink">{statusCopy[status ?? '']?.title ?? status}</h2>
-              <p className="text-sm text-ink/55">{statusCopy[status ?? '']?.body ?? ''}</p>
+              <p className="text-sm text-ink-muted">{statusCopy[status ?? '']?.body ?? ''}</p>
             </div>
           </div>
 
@@ -269,7 +269,7 @@ function ActiveRideView() {
             <div className="space-y-3">
               <div className="rounded-2xl bg-surface border border-border px-4 py-3">
                 {!canNoShow ? (
-                  <p className="text-sm text-ink/60 flex items-center gap-2">
+                  <p className="text-sm text-ink-muted flex items-center gap-2">
                     <Clock3 size={16} className="text-amber-600" />
                     Waiting for the passenger · {Math.floor(waitedSec / 60)}:{String(Math.floor(waitedSec % 60)).padStart(2, '0')}
                   </p>
@@ -298,7 +298,7 @@ function ActiveRideView() {
         </section>
 
         {socket.riderLocation && status !== 'CLAIMED' && (
-          <p className="text-xs text-ink/45 mt-3 text-center">
+          <p className="text-xs text-ink-subtle mt-3 text-center">
             Your live location is shared with the passenger until the ride ends.
           </p>
         )}
@@ -367,7 +367,7 @@ function RiderRateModal() {
       dismissible={false}
     >
       <div className="space-y-4">
-        <p className="text-sm text-ink/60">Rate the passenger before claiming your next request.</p>
+        <p className="text-sm text-ink-muted">Rate the passenger before claiming your next request.</p>
         <div className="flex justify-center gap-2">
           {[1, 2, 3, 4, 5].map((n) => (
             <button key={n} aria-label={`${n} stars`} onClick={() => setStars(n)} className="p-2 rounded-xl">

@@ -118,7 +118,7 @@ export default function RiderVerificationPage() {
             : 'We are reviewing your National ID and driver licence.'
         }
       />
-      <p className="text-xs text-ink/45 text-center px-6 pb-6">
+      <p className="text-xs text-ink-subtle text-center px-6 pb-6">
         This check keeps every passenger safe. If you think this is taking too long, sign out and
         contact support with your phone number.
       </p>

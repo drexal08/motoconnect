@@ -6,7 +6,7 @@ export default function TermsPage() {
     <div className="min-h-screen bg-surface pb-24">
       <div className="max-w-2xl mx-auto px-4 pt-10">
         <h1 className="text-3xl font-extrabold text-ink tracking-tight mb-2">Terms of service</h1>
-        <p className="text-sm text-ink/50 mb-8">Last updated: 31 July 2026</p>
+        <p className="text-sm text-ink-subtle mb-8">Last updated: 31 July 2026</p>
 
         <Section title="1. The service">
           <p>MotoConnect matches passengers with moto-taxi riders in Rwanda. Plans, claims, and cancellations are governed by the rules below.</p>

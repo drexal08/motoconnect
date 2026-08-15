@@ -164,7 +164,7 @@ export default function RiderDocumentsPage() {
           </div>
 
           <h1 className="text-xl font-bold text-ink text-center mb-1">Photograph your documents</h1>
-          <p className="text-sm text-ink/60 text-center mb-5">
+          <p className="text-sm text-ink-muted text-center mb-5">
             We check these by hand before you can take rides. Clear photos are approved faster.
           </p>
 
@@ -199,7 +199,7 @@ export default function RiderDocumentsPage() {
               </Button>
 
               {!complete && (
-                <p className="text-xs text-ink/50 text-center">
+                <p className="text-xs text-ink-subtle text-center">
                   Your National ID, licence and plate are required. You can come back and finish later —
                   your details are already saved.
                 </p>
@@ -243,7 +243,7 @@ function DocumentSlot({
       <div className="flex items-start gap-3">
         <div
           className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${
-            done ? 'bg-emerald-100 text-emerald-700' : 'bg-surface text-ink/40'
+            done ? 'bg-emerald-100 text-emerald-700' : 'bg-surface text-ink-subtle'
           }`}
         >
           {done ? <CheckCircle2 size={20} /> : <Camera size={20} />}
@@ -253,7 +253,7 @@ function DocumentSlot({
             <h2 className="text-sm font-semibold text-ink">{slot.title}</h2>
             {slot.required && !done && <span className="text-[11px] font-semibold text-amber-700">Required</span>}
           </div>
-          <p className="text-xs text-ink/55 mt-0.5 leading-relaxed">{slot.help}</p>
+          <p className="text-xs text-ink-muted mt-0.5 leading-relaxed">{slot.help}</p>
         </div>
       </div>
 
@@ -299,7 +299,7 @@ function DocumentSlot({
           <button
             onClick={onRemove}
             aria-label={`Remove the ${slot.title} photo`}
-            className="w-11 h-11 shrink-0 rounded-xl border border-border text-ink/40 hover:text-red-700 hover:border-red-200 flex items-center justify-center"
+            className="w-11 h-11 shrink-0 rounded-xl border border-border text-ink-subtle hover:text-red-700 hover:border-red-200 flex items-center justify-center"
           >
             <Trash2 size={16} />
           </button>

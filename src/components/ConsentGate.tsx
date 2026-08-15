@@ -49,7 +49,7 @@ export default function ConsentGate({ children, required = false }: { children: 
               </ul>
             </div>
           </div>
-          <p className="text-xs text-ink/50">
+          <p className="text-xs text-ink-subtle">
             Read the full{' '}
             <Link to="/privacy" className="text-emerald-800 font-semibold underline">
               Privacy Policy

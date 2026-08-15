@@ -54,7 +54,7 @@ export function Input({ className, ...rest }: InputHTMLAttributes<HTMLInputEleme
   return (
     <input
       className={cn(
-        'w-full rounded-xl border border-input bg-white px-4 py-3 text-base text-ink placeholder:text-ink/35',
+        'w-full rounded-xl border border-input bg-white px-4 py-3 text-base text-ink placeholder:text-ink-subtle',
         'focus:outline-2 focus:outline-emerald-600 focus:border-emerald-600 transition',
         className
       )}
@@ -67,7 +67,7 @@ export function Textarea({ className, ...rest }: TextareaHTMLAttributes<HTMLText
   return (
     <textarea
       className={cn(
-        'w-full rounded-xl border border-input bg-white px-4 py-3 text-base text-ink placeholder:text-ink/35',
+        'w-full rounded-xl border border-input bg-white px-4 py-3 text-base text-ink placeholder:text-ink-subtle',
         'focus:outline-2 focus:outline-emerald-600 focus:border-emerald-600 transition',
         className
       )}
@@ -95,7 +95,7 @@ export function FormField({
         {label}
       </label>
       {children}
-      {hint && !error && <p className="text-xs text-ink/50">{hint}</p>}
+      {hint && !error && <p className="text-xs text-ink-subtle">{hint}</p>}
       {error && <p className="text-xs font-medium text-red-700">{error}</p>}
     </div>
   );
@@ -145,7 +145,7 @@ export function Modal({
             <button
               onClick={onClose}
               aria-label="Close"
-              className="p-2 rounded-full hover:bg-surface transition-colors text-ink/60"
+              className="p-2 rounded-full hover:bg-surface transition-colors text-ink-muted"
             >
               <X size={20} />
             </button>
@@ -161,7 +161,7 @@ export function Modal({
 /* ─── Loading / skeleton / empty states (§7.4 — three mandatory variants) ── */
 export function Spinner({ label }: { label?: string }) {
   return (
-    <div className="flex items-center justify-center gap-3 py-8 text-ink/60">
+    <div className="flex items-center justify-center gap-3 py-8 text-ink-muted">
       <Loader2 size={22} className="animate-spin text-emerald-700" />
       {label && <p className="text-sm font-medium">{label}</p>}
     </div>
@@ -189,7 +189,7 @@ export function EmptyState({
         {icon}
       </div>
       <h3 className="font-bold text-ink text-base mb-1">{title}</h3>
-      {body && <p className="text-sm text-ink/55 max-w-xs mb-4">{body}</p>}
+      {body && <p className="text-sm text-ink-muted max-w-xs mb-4">{body}</p>}
       {action}
     </div>
   );
@@ -203,7 +203,7 @@ export function Badge({
   tone?: 'neutral' | 'emerald' | 'amber' | 'red';
 }) {
   const tones = {
-    neutral: 'bg-surface text-ink/60 border border-border',
+    neutral: 'bg-surface text-ink-muted border border-border',
     emerald: 'bg-emerald-50 text-emerald-800 border border-emerald-100',
     amber: 'bg-amber-50 text-amber-800 border border-amber-100',
     red: 'bg-red-50 text-red-700 border border-red-100',

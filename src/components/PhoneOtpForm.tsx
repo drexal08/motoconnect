@@ -112,7 +112,7 @@ export default function PhoneOtpForm({
   return (
     <div className="space-y-4">
       <div>
-        <p className="text-sm text-ink/60">
+        <p className="text-sm text-ink-muted">
           We sent a 6-digit code to <strong className="text-ink">{phone}</strong>.
         </p>
         {devCode && (
@@ -141,7 +141,7 @@ export default function PhoneOtpForm({
           Change number
         </button>
         {resendIn > 0 ? (
-          <span className="text-ink/40">Resend in {resendIn}s</span>
+          <span className="text-ink-subtle">Resend in {resendIn}s</span>
         ) : (
           <button onClick={sendCode} className="text-emerald-800 font-semibold hover:underline" disabled={busy}>
             Resend code

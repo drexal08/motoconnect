@@ -7,7 +7,7 @@ export default function SignupPage() {
     <div className="min-h-screen bg-surface pb-16">
       <div className="max-w-lg mx-auto px-4 pt-12">
         <h1 className="text-2xl font-extrabold text-ink tracking-tight text-center mb-2">Join MotoConnect</h1>
-        <p className="text-sm text-ink/55 text-center mb-8">Who are you joining as?</p>
+        <p className="text-sm text-ink-muted text-center mb-8">Who are you joining as?</p>
         <div className="grid gap-4">
           <Link
             to="/signup/passenger"
@@ -18,7 +18,7 @@ export default function SignupPage() {
             </div>
             <div>
               <h2 className="font-bold text-ink">Passenger</h2>
-              <p className="text-sm text-ink/55">Request rides and get matched with nearby riders.</p>
+              <p className="text-sm text-ink-muted">Request rides and get matched with nearby riders.</p>
             </div>
           </Link>
           <Link
@@ -30,11 +30,11 @@ export default function SignupPage() {
             </div>
             <div>
               <h2 className="font-bold text-ink">Rider</h2>
-              <p className="text-sm text-ink/55">Get verified, choose a plan, and start seeing passengers.</p>
+              <p className="text-sm text-ink-muted">Get verified, choose a plan, and start seeing passengers.</p>
             </div>
           </Link>
         </div>
-        <p className="text-center text-sm text-ink/50 mt-6">
+        <p className="text-center text-sm text-ink-subtle mt-6">
           Already have an account?{' '}
           <Link to="/login" className="font-semibold text-emerald-800 hover:underline">Sign in</Link>
         </p>

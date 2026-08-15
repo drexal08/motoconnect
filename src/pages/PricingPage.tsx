@@ -77,7 +77,7 @@ export default function PricingPage() {
       <div className="max-w-5xl mx-auto px-4 pt-10">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-extrabold text-ink tracking-tight">Plans for riders</h1>
-          <p className="text-sm text-ink/55 mt-2 max-w-md mx-auto">
+          <p className="text-sm text-ink-muted mt-2 max-w-md mx-auto">
             Pay with MTN MoMo or Airtel Money. A claim only counts after the passenger confirms you
             — expired claims are free.
           </p>
@@ -106,9 +106,9 @@ export default function PricingPage() {
               </div>
               <div className="mt-3 flex items-baseline gap-1.5">
                 <span className="text-3xl font-extrabold text-ink tracking-tight">{t.price}</span>
-                <span className="text-sm font-semibold text-ink/45">{t.period}</span>
+                <span className="text-sm font-semibold text-ink-subtle">{t.period}</span>
               </div>
-              <p className="text-sm text-ink/55 mt-2 mb-4">{t.desc}</p>
+              <p className="text-sm text-ink-muted mt-2 mb-4">{t.desc}</p>
               <ul className="space-y-2 text-sm text-ink/75 mb-6">
                 <li className="flex items-center gap-2"><Check size={16} className="text-emerald-700 shrink-0" /> {t.cap}</li>
                 <li className="flex items-center gap-2"><Check size={16} className="text-emerald-700 shrink-0" /> Anonymous radar view</li>
@@ -123,7 +123,7 @@ export default function PricingPage() {
           ))}
         </div>
 
-        <p className="text-xs text-ink/40 text-center mt-8 max-w-md mx-auto">
+        <p className="text-xs text-ink-subtle text-center mt-8 max-w-md mx-auto">
           Payments are collected by PayPack and sent to MTN MoMo or Airtel Money. You approve the
           payment on your phone. In development without PayPack credentials, purchases are
           simulated automatically.
@@ -135,11 +135,11 @@ export default function PricingPage() {
               <Loader2 size={32} className="animate-spin text-emerald-700 mx-auto" />
               <div>
                 <p className="font-bold text-ink">Payment request sent</p>
-                <p className="text-sm text-ink/55 mt-1">
+                <p className="text-sm text-ink-muted mt-1">
                   Approve the {momoPhone.startsWith('078') || momoPhone.startsWith('079') ? 'MTN MoMo' : 'Airtel Money'} prompt on your phone.
                 </p>
               </div>
-              <p className="text-xs text-ink/45">Waiting for approval — this can take a minute.</p>
+              <p className="text-xs text-ink-subtle">Waiting for approval — this can take a minute.</p>
             </div>
           ) : paymentStatus === 'success' ? (
             <div className="space-y-4 text-center py-4">
@@ -148,7 +148,7 @@ export default function PricingPage() {
               </div>
               <div>
                 <p className="font-bold text-ink">Plan activated</p>
-                <p className="text-sm text-ink/55 mt-1">Your {tier?.label} plan is live. Happy riding!</p>
+                <p className="text-sm text-ink-muted mt-1">Your {tier?.label} plan is live. Happy riding!</p>
               </div>
               <Button fullWidth onClick={() => { setCheckoutTier(null); setPaymentId(null); window.location.href = '/rider'; }}>
                 Go to my radar
@@ -157,7 +157,7 @@ export default function PricingPage() {
           ) : paymentStatus === 'failed' ? (
             <div className="space-y-4 text-center py-4">
               <p className="font-bold text-ink">Payment did not go through</p>
-              <p className="text-sm text-ink/55">The payment was not completed. Check the number and try again.</p>
+              <p className="text-sm text-ink-muted">The payment was not completed. Check the number and try again.</p>
               <Button fullWidth variant="outline" onClick={() => { setPaymentId(null); setPaymentStatus('pending'); }}>
                 Try again
               </Button>

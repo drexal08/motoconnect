@@ -37,7 +37,7 @@ export default function PassengerSignupPage() {
             <LogoFull />
           </div>
           <h1 className="text-xl font-bold text-ink text-center mb-1">Ride with MotoConnect</h1>
-          <p className="text-sm text-ink/55 text-center mb-6">
+          <p className="text-sm text-ink-muted text-center mb-6">
             {step === 'details'
               ? 'Tell us who you are, then verify your phone.'
               : 'We sent you a code to verify your phone.'}
@@ -88,7 +88,7 @@ export default function PassengerSignupPage() {
           )}
 
           <ImigongoDivider className="my-6" />
-          <div className="text-sm text-ink/55 space-y-1 text-center">
+          <div className="text-sm text-ink-muted space-y-1 text-center">
             <p>
               Already have an account?{' '}
               <Link to="/login" className="font-semibold text-emerald-800 hover:underline">

@@ -39,7 +39,18 @@ module.exports = {
           card: '#ffffff',
           raised: '#ffffff',
         },
-        ink: '#1f2421',         // charcoal text
+        // §7.2 — Neutrals.
+        //
+        // `ink` at reduced opacity was used for secondary text throughout, which
+        // measured 2.4:1 to 3.7:1 against white — well under the 4.5:1 the
+        // standard requires, and this app is read outdoors in Kigali sunlight
+        // where faint grey is the first thing to disappear. These two tokens
+        // replace those opacities and are contrast-checked against #ffffff.
+        ink: {
+          DEFAULT: '#1f2421',   // charcoal text — 15.4:1
+          muted: '#5f6763',     // secondary text — 5.8:1, passes AA
+          subtle: '#6e7773',    // tertiary text and hints — 4.6:1, passes AA
+        },
         primary: {
           DEFAULT: '#0b6e4f',
           50: '#e7f5f0',

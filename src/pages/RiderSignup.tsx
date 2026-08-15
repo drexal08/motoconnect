@@ -69,7 +69,7 @@ export default function RiderSignupPage() {
             <LogoFull />
           </div>
           <h1 className="text-xl font-bold text-ink text-center mb-1">Ride as a motorcyclist</h1>
-          <p className="text-sm text-ink/55 text-center mb-6">
+          <p className="text-sm text-ink-muted text-center mb-6">
             {step === 'details'
               ? 'Your details are checked by our team before you can see any ride requests.'
               : 'We sent you a code to verify your phone.'}
@@ -141,7 +141,7 @@ export default function RiderSignupPage() {
               <Button fullWidth onClick={continueToOtp}>
                 Continue
               </Button>
-              <p className="text-xs text-ink/50 text-center">
+              <p className="text-xs text-ink-subtle text-center">
                 Next you will photograph your ID, licence and plate so our team can check them.
               </p>
             </div>
@@ -161,7 +161,7 @@ export default function RiderSignupPage() {
           )}
 
           <ImigongoDivider className="my-6" />
-          <p className="text-sm text-ink/55 text-center">
+          <p className="text-sm text-ink-muted text-center">
             Just riding?{' '}
             <Link to="/signup" className="font-semibold text-emerald-800 hover:underline">
               Create a passenger account
